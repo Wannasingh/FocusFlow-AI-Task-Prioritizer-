@@ -9,23 +9,31 @@ import Foundation
 
 enum SupabaseConfig {
     // Read from environment variables (set by Config.xcconfig)
-    // Fallback to hardcoded values for development (you can remove these later)
     static var supabaseURL: String {
-        // Try environment variable first
-        if let envURL = ProcessInfo.processInfo.environment["SUPABASE_URL"], !envURL.isEmpty {
-            return envURL
+        guard let url = ProcessInfo.processInfo.environment["SUPABASE_URL"], !url.isEmpty else {
+            fatalError("""
+                ❌ SUPABASE_URL not configured!
+                
+                Please set up Config.xcconfig:
+                1. Make sure Config.xcconfig exists in project root
+                2. Add: SUPABASE_URL = your_supabase_url
+                3. In Xcode: Project Settings → Info → Configurations → Set to 'Config'
+                """)
         }
-        // Fallback for development
-        return "***REMOVED***"
+        return url
     }
     
     static var supabaseAnonKey: String {
-        // Try environment variable first
-        if let envKey = ProcessInfo.processInfo.environment["SUPABASE_ANON_KEY"], !envKey.isEmpty {
-            return envKey
+        guard let key = ProcessInfo.processInfo.environment["SUPABASE_ANON_KEY"], !key.isEmpty else {
+            fatalError("""
+                ❌ SUPABASE_ANON_KEY not configured!
+                
+                Please set up Config.xcconfig:
+                1. Make sure Config.xcconfig exists in project root
+                2. Add: SUPABASE_ANON_KEY = your_supabase_key
+                3. In Xcode: Project Settings → Info → Configurations → Set to 'Config'
+                """)
         }
-        // Fallback for development
-        return "***REMOVED***"
+        return key
     }
 }
-
