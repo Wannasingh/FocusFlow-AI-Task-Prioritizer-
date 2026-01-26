@@ -26,6 +26,23 @@ struct LoginView: View {
             
             // Main content
             VStack(spacing: 0) {
+                // Back Button
+                HStack {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.black)
+                            .frame(width: 44, height: 44)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                    }
+                    .padding(.leading, 24)
+                    .padding(.top, 16)
+                    
+                    Spacer()
+                }
+                
                 Spacer()
                 
                 // Header
