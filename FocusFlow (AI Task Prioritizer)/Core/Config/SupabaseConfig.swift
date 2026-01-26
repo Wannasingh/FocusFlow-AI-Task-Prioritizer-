@@ -8,18 +8,24 @@
 import Foundation
 
 enum SupabaseConfig {
-    // These values are loaded from Info.plist which gets them from Config.xcconfig
+    // Read from environment variables (set by Config.xcconfig)
+    // Fallback to hardcoded values for development (you can remove these later)
     static var supabaseURL: String {
-        guard let url = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String else {
-            fatalError("SUPABASE_URL not found in Info.plist. Please configure Config.xcconfig")
+        // Try environment variable first
+        if let envURL = ProcessInfo.processInfo.environment["SUPABASE_URL"], !envURL.isEmpty {
+            return envURL
         }
-        return url
+        // Fallback for development
+        return "***REMOVED***"
     }
     
     static var supabaseAnonKey: String {
-        guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String else {
-            fatalError("SUPABASE_ANON_KEY not found in Info.plist. Please configure Config.xcconfig")
+        // Try environment variable first
+        if let envKey = ProcessInfo.processInfo.environment["SUPABASE_ANON_KEY"], !envKey.isEmpty {
+            return envKey
         }
-        return key
+        // Fallback for development
+        return "***REMOVED***"
     }
 }
+
