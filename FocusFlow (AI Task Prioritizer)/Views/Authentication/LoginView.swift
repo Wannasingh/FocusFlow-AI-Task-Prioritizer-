@@ -11,33 +11,37 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showSignUp = false
-    @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         ZStack {
-            // Background
-            (colorScheme == .dark ? Color.backgroundDark : Color.backgroundLight)
+            // Background - clean beige/cream
+            Color(hex: "#f8f8f5")
                 .ignoresSafeArea()
             
             // Decorative elements
             decorativeElements
             
             // Main content
-            VStack(spacing: 32) {
+            VStack(spacing: 0) {
                 Spacer()
                 
                 // Header
                 header
+                    .padding(.bottom, 60)
                 
                 // Login form
                 loginForm
+                    .padding(.horizontal, 32)
+                
+                Spacer()
                 
                 // Footer
                 footer
+                    .padding(.bottom, 40)
                 
-                Spacer()
+                // Bottom stripe
+                bottomStripe
             }
-            .padding(.horizontal, 24)
         }
         .sheet(isPresented: $showSignUp) {
             SignUpView()
@@ -47,44 +51,19 @@ struct LoginView: View {
     // MARK: - Decorative Elements
     private var decorativeElements: some View {
         ZStack {
-            // Large circle - top left
+            // Top right circle
             Circle()
-                .fill(Color.primaryYellow)
-                .frame(width: 256, height: 256)
-                .overlay(
-                    Circle()
-                        .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 4)
-                )
-                .opacity(0.8)
-                .offset(x: -100, y: -280)
+                .fill(Color.black)
+                .frame(width: 80, height: 80)
+                .offset(x: 150, y: -350)
             
-            // Square - bottom right
+            // Bottom left rotated square
             Rectangle()
                 .fill(Color.clear)
-                .frame(width: 192, height: 192)
-                .overlay(
-                    Rectangle()
-                        .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 4)
-                )
-                .rotationEffect(.degrees(12))
-                .offset(x: 150, y: 350)
-            
-            // Small circle - top right (mobile)
-            Circle()
-                .fill(colorScheme == .dark ? Color.primaryYellow : Color.black)
-                .frame(width: 48, height: 48)
-                .offset(x: 150, y: -300)
-            
-            // Small square - bottom left (mobile)
-            Rectangle()
-                .fill(Color.clear)
-                .frame(width: 64, height: 64)
-                .overlay(
-                    Rectangle()
-                        .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 4)
-                )
+                .frame(width: 100, height: 100)
+                .overlay(Rectangle().stroke(Color.black, lineWidth: 4))
                 .rotationEffect(.degrees(45))
-                .offset(x: -150, y: 350)
+                .offset(x: -150, y: 380)
         }
     }
     
@@ -92,57 +71,105 @@ struct LoginView: View {
     private var header: some View {
         VStack(spacing: 16) {
             Text("FOCUS\nFLOW")
-                .font(.system(size: 64, weight: .black, design: .rounded))
+                .font(.system(size: 56, weight: .black, design: .rounded))
                 .tracking(-2)
                 .multilineTextAlignment(.center)
-                .foregroundColor(colorScheme == .dark ? .white : .textPrimary)
+                .foregroundColor(.black)
             
             Text("Master your tasks.")
-                .font(.displayBold(16))
-                .foregroundColor(colorScheme == .dark ? .white : .textPrimary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(colorScheme == .dark ? Color.black.opacity(0.2) : Color.white)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(colorScheme == .dark ? Color.white.opacity(0.1) : Color.clear, lineWidth: 2)
-                )
-                .cornerRadius(4)
+                .font(.system(size: 18, weight: .medium, design: .default))
+                .foregroundColor(.black)
         }
     }
     
     // MARK: - Login Form
     private var loginForm: some View {
         VStack(spacing: 24) {
-            NeubrutalistTextField(
-                label: "Email",
-                icon: "envelope",
-                placeholder: "name@example.com",
-                text: $email
-            )
+            // Email Field
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "envelope")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.black)
+                    Text("EMAIL")
+                        .font(.system(size: 14, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                        .tracking(1)
+                }
+                
+                TextField("name@example.com", text: $email)
+                    .font(.system(size: 16, weight: .regular, design: .default))
+                    .padding(.horizontal, 16)
+                    .frame(height: 56)
+                    .background(Color.white)
+                    .foregroundColor(.black)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.black, lineWidth: 3)
+                    )
+                    .autocapitalization(.none)
+                    .keyboardType(.emailAddress)
+            }
             
-            NeubrutalistTextField(
-                label: "Password",
-                icon: "lock",
-                placeholder: "••••••••",
-                text: $password,
-                isSecure: true
-            )
+            // Password Field
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: "lock")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.black)
+                    Text("PASSWORD")
+                        .font(.system(size: 14, weight: .bold, design: .default))
+                        .foregroundColor(.black)
+                        .tracking(1)
+                }
+                
+                SecureField("••••••••", text: $password)
+                    .font(.system(size: 16, weight: .regular, design: .default))
+                    .padding(.horizontal, 16)
+                    .frame(height: 56)
+                    .background(Color.white)
+                    .foregroundColor(.black)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.black, lineWidth: 3)
+                    )
+            }
             
             // Forgot password
             HStack {
                 Spacer()
                 Button(action: {}) {
                     Text("Forgot Password?")
-                        .font(.displayBold(14))
-                        .foregroundColor(colorScheme == .dark ? .white : .textPrimary)
+                        .font(.system(size: 14, weight: .medium, design: .default))
+                        .foregroundColor(.black)
                         .underline()
                 }
             }
             
             // Login button
-            NeubrutalistButton.primary(title: "Login", icon: "arrow.right") {
+            Button(action: {
                 // TODO: Implement login
+            }) {
+                HStack(spacing: 8) {
+                    Text("LOGIN")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .tracking(2)
+                    
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 18, weight: .bold))
+                }
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(Color.primaryYellow)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.black, lineWidth: 3)
+                )
+                .shadow(color: .black, radius: 0, x: 6, y: 6)
             }
             .padding(.top, 8)
         }
@@ -152,16 +179,13 @@ struct LoginView: View {
     private var footer: some View {
         HStack(spacing: 4) {
             Text("Don't have an account?")
-                .font(.bodyMedium(16))
-                .foregroundColor(colorScheme == .dark ? .white : .textPrimary)
+                .font(.system(size: 16, weight: .regular, design: .default))
+                .foregroundColor(.black)
             
             Button(action: { showSignUp = true }) {
                 Text("Sign Up")
-                    .font(.displayBlack(16))
+                    .font(.system(size: 16, weight: .bold, design: .default))
                     .foregroundColor(.black)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 2)
-                    .background(Color.primaryYellow)
                     .underline()
             }
         }
@@ -172,10 +196,11 @@ struct LoginView: View {
         HStack(spacing: 0) {
             ForEach(0..<6) { index in
                 Rectangle()
-                    .fill(index % 2 == 0 ? Color.primaryYellow : (colorScheme == .dark ? Color.white : Color.black))
+                    .fill(index % 2 == 0 ? Color.primaryYellow : Color.black)
                     .frame(height: 8)
             }
         }
+        .ignoresSafeArea(edges: .bottom)
     }
 }
 

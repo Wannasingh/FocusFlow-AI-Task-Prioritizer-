@@ -11,7 +11,7 @@ import SwiftUI
 struct FocusFlow__AI_Task_Prioritizer_App: App {
     var body: some Scene {
         WindowGroup {
-            DashboardView()
+            WelcomeView()
         }
     }
 }
