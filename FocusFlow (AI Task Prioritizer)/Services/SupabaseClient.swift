@@ -8,8 +8,8 @@
 import Foundation
 import Supabase
 
-class SupabaseClient {
-    static let shared = SupabaseClient()
+class SupabaseManager {
+    static let shared = SupabaseManager()
     
     let client: SupabaseClient
     
@@ -20,15 +20,21 @@ class SupabaseClient {
         )
     }
     
-    // Test connection
+    // Test connection by checking if we can query the database
     func testConnection() async throws -> Bool {
-        // Try to fetch from a simple query
-        let response = try await client
-            .from("users")
-            .select()
-            .limit(1)
-            .execute()
-        
-        return response.status == 200
+        do {
+            // Try to query the users table (just to test connection)
+            let _: [User] = try await client
+                .from("users")
+                .select()
+                .limit(1)
+                .execute()
+                .value
+            
+            return true
+        } catch {
+            print("❌ Supabase connection error: \(error)")
+            throw error
+        }
     }
 }
