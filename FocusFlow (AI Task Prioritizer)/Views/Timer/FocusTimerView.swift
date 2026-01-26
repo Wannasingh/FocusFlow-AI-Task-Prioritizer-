@@ -10,13 +10,14 @@ import SwiftUI
 struct FocusTimerView: View {
     @State private var timeRemaining = 1500 // 25 minutes in seconds
     @State private var isRunning = false
-    @State private var sessionType: SessionType = .pomodoro
+    @State private var sessionType: Models.SessionType = .pomodoro
     @Environment(\.colorScheme) var colorScheme
     
     var progress: Double {
         let total = sessionType == .pomodoro ? 1500.0 : 3600.0
         return Double(timeRemaining) / total
     }
+
     
     var body: some View {
         ZStack {

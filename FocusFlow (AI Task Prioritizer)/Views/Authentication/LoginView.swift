@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct LoginView: View {
+    @StateObject private var authService = AuthService()
     @State private var email = ""
     @State private var password = ""
+    @State private var showError = false
     @State private var showSignUp = false
+    @Environment(\.dismiss) var dismiss
     
     var body: some View {
         ZStack {
@@ -27,7 +30,7 @@ struct LoginView: View {
                 
                 // Header
                 header
-                    .padding(.bottom, 60)
+                    .padding(.bottom, 40)
                 
                 // Login form
                 loginForm
@@ -45,6 +48,11 @@ struct LoginView: View {
         }
         .sheet(isPresented: $showSignUp) {
             SignUpView()
+        }
+        .alert("Error", isPresented: $showError) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(authService.errorMessage ?? "An error occurred")
         }
     }
     
@@ -140,7 +148,13 @@ struct LoginView: View {
             // Forgot password
             HStack {
                 Spacer()
-                Button(action: {}) {
+                Button(action: {
+                    Task {
+                        if !email.isEmpty {
+                            try? await authService.resetPassword(email: email)
+                        }
+                    }
+                }) {
                     Text("Forgot Password?")
                         .font(.system(size: 14, weight: .medium, design: .default))
                         .foregroundColor(.black)
@@ -149,16 +163,19 @@ struct LoginView: View {
             }
             
             // Login button
-            Button(action: {
-                // TODO: Implement login
-            }) {
+            Button(action: handleLogin) {
                 HStack(spacing: 8) {
-                    Text("LOGIN")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .tracking(2)
-                    
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 18, weight: .bold))
+                    if authService.isLoading {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                    } else {
+                        Text("LOGIN")
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .tracking(2)
+                        
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 18, weight: .bold))
+                    }
                 }
                 .foregroundColor(.black)
                 .frame(maxWidth: .infinity)
@@ -171,7 +188,38 @@ struct LoginView: View {
                 )
                 .shadow(color: .black, radius: 0, x: 6, y: 6)
             }
+            .disabled(authService.isLoading)
             .padding(.top, 8)
+            
+            // Divider
+            HStack {
+                Rectangle().fill(Color.black).frame(height: 2)
+                Text("OR")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.black)
+                Rectangle().fill(Color.black).frame(height: 2)
+            }
+            .padding(.vertical, 8)
+            
+            // Social Login Buttons
+            VStack(spacing: 12) {
+                // Google Sign In
+                Button(action: { Task { try? await authService.signInWithGoogle() } }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "g.circle.fill")
+                            .font(.system(size: 24))
+                        Text("Continue with Google")
+                            .font(.system(size: 16, weight: .bold))
+                    }
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(Color.white)
+                    .cornerRadius(12)
+                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
+                    .shadow(color: .black, radius: 0, x: 4, y: 4)
+                }
+            }
         }
     }
     
@@ -202,8 +250,26 @@ struct LoginView: View {
         }
         .ignoresSafeArea(edges: .bottom)
     }
+    
+    private func handleLogin() {
+        guard !email.isEmpty && !password.isEmpty else {
+            authService.errorMessage = "Please enter both email and password"
+            showError = true
+            return
+        }
+        
+        Task {
+            do {
+                try await authService.signIn(email: email, password: password)
+                // App state will update via authService.isAuthenticated
+            } catch {
+                showError = true
+            }
+        }
+    }
 }
 
 #Preview {
     LoginView()
 }
+

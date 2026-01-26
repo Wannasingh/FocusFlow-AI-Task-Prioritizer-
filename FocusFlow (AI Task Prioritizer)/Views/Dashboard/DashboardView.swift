@@ -8,13 +8,12 @@
 import SwiftUI
 
 struct DashboardView: View {
-    @State private var selectedTab: NavTab = .dashboard
     @State private var showAddTask = false
     @Environment(\.colorScheme) var colorScheme
+    @EnvironmentObject var authService: AuthService
     
     // Mock data
     @State private var focusScore = 84
-    @State private var userName = "Ready to Flow?"
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -31,22 +30,20 @@ struct DashboardView: View {
                     priorityTasksSection
                     
                     // Spacer for bottom nav
-                    Spacer(minLength: 100)
+                    Spacer(minLength: 40)
                 }
             }
             .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
-            
-            // FAB
-            floatingActionButton
-            
-            // Bottom Navigation
-            BottomNavBar(selectedTab: $selectedTab)
         }
-        .ignoresSafeArea(edges: .bottom)
         .sheet(isPresented: $showAddTask) {
             AddTaskView()
         }
     }
+    
+    private var userName: String {
+        authService.currentUser?.displayName ?? "Ready to Flow?"
+    }
+
     
     // MARK: - Header
     private var header: some View {

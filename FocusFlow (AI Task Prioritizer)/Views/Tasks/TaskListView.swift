@@ -14,10 +14,10 @@ struct TaskListView: View {
     
     // Mock tasks
     @State private var tasks: [TaskItem] = [
-        TaskItem(title: "Draft Q3 Report", category: .work, time: "Today, 10:00 AM", priority: "High Priority", color: .neoCyan),
-        TaskItem(title: "Email Marketing Team", category: .marketing, time: "Today, 12:30 PM", priority: "Marketing", color: .neoMagenta),
-        TaskItem(title: "Review Codebase", category: .dev, time: "Today, 2:00 PM", priority: "Dev", color: .neoOrange),
-        TaskItem(title: "Gym Session", category: .health, time: "Today, 6:00 PM", priority: "Health", color: .neoPurple)
+        TaskItem(title: "Draft Q3 Report", category: Models.TaskCategory.work, time: "Today, 10:00 AM", priority: "High Priority", color: .neoCyan),
+        TaskItem(title: "Email Marketing Team", category: Models.TaskCategory.marketing, time: "Today, 12:30 PM", priority: "Marketing", color: .neoMagenta),
+        TaskItem(title: "Review Codebase", category: Models.TaskCategory.dev, time: "Today, 2:00 PM", priority: "Dev", color: .neoOrange),
+        TaskItem(title: "Gym Session", category: Models.TaskCategory.health, time: "Today, 6:00 PM", priority: "Health", color: .neoPurple)
     ]
     
     var body: some View {
@@ -285,7 +285,7 @@ enum TaskFilter: String, CaseIterable {
 struct TaskItem: Identifiable {
     let id = UUID()
     let title: String
-    let category: TaskCategory
+    let category: Models.TaskCategory
     let time: String
     let priority: String
     let color: Color

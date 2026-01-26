@@ -8,32 +8,33 @@
 import Foundation
 
 enum SupabaseConfig {
-    // Read from environment variables (set by Config.xcconfig)
+    // Read from Info.plist (which gets values from Config.xcconfig)
     static var supabaseURL: String {
-        guard let url = ProcessInfo.processInfo.environment["SUPABASE_URL"], !url.isEmpty else {
+        guard let url = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_URL") as? String, !url.isEmpty else {
             fatalError("""
                 ❌ SUPABASE_URL not configured!
                 
-                Please set up Config.xcconfig:
-                1. Make sure Config.xcconfig exists in project root
-                2. Add: SUPABASE_URL = your_supabase_url
-                3. In Xcode: Project Settings → Info → Configurations → Set to 'Config'
+                Please check:
+                1. Info.plist contains SUPABASE_URL key with value $(SUPABASE_URL)
+                2. Config.xcconfig contains SUPABASE_URL = your_url
+                3. Project Settings -> Info -> Configurations is set to 'Config'
                 """)
         }
         return url
     }
     
     static var supabaseAnonKey: String {
-        guard let key = ProcessInfo.processInfo.environment["SUPABASE_ANON_KEY"], !key.isEmpty else {
+        guard let key = Bundle.main.object(forInfoDictionaryKey: "SUPABASE_ANON_KEY") as? String, !key.isEmpty else {
             fatalError("""
                 ❌ SUPABASE_ANON_KEY not configured!
                 
-                Please set up Config.xcconfig:
-                1. Make sure Config.xcconfig exists in project root
-                2. Add: SUPABASE_ANON_KEY = your_supabase_key
-                3. In Xcode: Project Settings → Info → Configurations → Set to 'Config'
+                Please check:
+                1. Info.plist contains SUPABASE_ANON_KEY key with value $(SUPABASE_ANON_KEY)
+                2. Config.xcconfig contains SUPABASE_ANON_KEY = your_key
+                3. Project Settings -> Info -> Configurations is set to 'Config'
                 """)
         }
         return key
     }
 }
+

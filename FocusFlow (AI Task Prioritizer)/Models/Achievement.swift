@@ -7,17 +7,18 @@
 
 import Foundation
 
-enum AchievementType: String, Codable {
-    case firstTask = "first_task"
-    case streak7Days = "streak_7_days"
-    case streak30Days = "streak_30_days"
-    case focusScore100 = "focus_score_100"
-    case completedTasks50 = "completed_tasks_50"
-    case completedTasks100 = "completed_tasks_100"
-    case deepWorkMaster = "deep_work_master"
-}
+extension Models {
+    enum AchievementType: String, Codable {
+        case firstTask = "first_task"
+        case streak7Days = "streak_7_days"
+        case streak30Days = "streak_30_days"
+        case focusScore100 = "focus_score_100"
+        case completedTasks50 = "completed_tasks_50"
+        case completedTasks100 = "completed_tasks_100"
+        case deepWorkMaster = "deep_work_master"
+    }
 
-struct Achievement: Identifiable, Codable {
+    struct Achievement: Identifiable, Codable {
     let id: UUID
     var userId: UUID
     var achievementType: AchievementType
@@ -34,5 +35,6 @@ struct Achievement: Identifiable, Codable {
         case description
         case icon
         case earnedAt = "earned_at"
+    }
     }
 }

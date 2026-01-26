@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import SwiftUI
+import Combine
 import Supabase
 import AuthenticationServices
 
 @MainActor
 class AuthService: ObservableObject {
-    @Published var currentUser: User?
+    @Published var currentUser: Models.User?
     @Published var isAuthenticated = false
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -28,10 +30,8 @@ class AuthService: ObservableObject {
     func checkAuthStatus() async {
         do {
             let session = try await supabase.auth.session
-            isAuthenticated = session.user != nil
-            if let user = session.user {
-                await fetchUserProfile(userId: user.id.uuidString)
-            }
+            isAuthenticated = true
+            await fetchUserProfile(userId: session.user.id)
         } catch {
             isAuthenticated = false
             currentUser = nil
@@ -51,13 +51,11 @@ class AuthService: ObservableObject {
             )
             
             // Create user profile in database
-            if let userId = response.user?.id.uuidString {
-                try await createUserProfile(
-                    userId: userId,
-                    email: email,
-                    displayName: displayName
-                )
-            }
+            try await createUserProfile(
+                userId: response.user.id,
+                email: email,
+                displayName: displayName
+            )
             
             isAuthenticated = true
             isLoading = false
@@ -79,9 +77,7 @@ class AuthService: ObservableObject {
                 password: password
             )
             
-            if let userId = response.user?.id.uuidString {
-                await fetchUserProfile(userId: userId)
-            }
+            await fetchUserProfile(userId: response.user.id)
             
             isAuthenticated = true
             isLoading = false
@@ -98,8 +94,8 @@ class AuthService: ObservableObject {
         errorMessage = nil
         
         do {
-            // Get OAuth URL from Supabase
-            let url = try await supabase.auth.getOAuthSignInURL(
+            // Get OAuth URL from Supabase (Synchronous in some v2 versions)
+            let url = try supabase.auth.getOAuthSignInURL(
                 provider: .google,
                 redirectTo: URL(string: "focusflow://auth/callback")
             )
@@ -121,8 +117,8 @@ class AuthService: ObservableObject {
         errorMessage = nil
         
         do {
-            // Get OAuth URL from Supabase
-            let url = try await supabase.auth.getOAuthSignInURL(
+            // Get OAuth URL from Supabase (Synchronous in some v2 versions)
+            let url = try supabase.auth.getOAuthSignInURL(
                 provider: .facebook,
                 redirectTo: URL(string: "focusflow://auth/callback")
             )
@@ -137,6 +133,7 @@ class AuthService: ObservableObject {
             throw error
         }
     }
+
     
     // MARK: - Sign Out
     func signOut() async throws {
@@ -167,11 +164,13 @@ class AuthService: ObservableObject {
     
     // MARK: - Private Helpers
     
-    private func createUserProfile(userId: String, email: String, displayName: String) async throws {
-        let newUser = User(
+    private func createUserProfile(userId: UUID, email: String, displayName: String) async throws {
+        let newUser = Models.User(
             id: userId,
             email: email,
             displayName: displayName,
+            avatarURL: nil,
+            focusScore: 0,
             createdAt: Date(),
             updatedAt: Date()
         )
@@ -184,12 +183,12 @@ class AuthService: ObservableObject {
         currentUser = newUser
     }
     
-    private func fetchUserProfile(userId: String) async {
+    private func fetchUserProfile(userId: UUID) async {
         do {
-            let users: [User] = try await supabase
+            let users: [Models.User] = try await supabase
                 .from("users")
                 .select()
-                .eq("id", value: userId)
+                .eq("id", value: userId.uuidString)
                 .execute()
                 .value
             
@@ -200,20 +199,120 @@ class AuthService: ObservableObject {
     }
     
     private func openOAuthURL(_ url: URL) async {
+        // We use ASWebAuthenticationSession for a better experience 
+        // It opens an in-app browser or the default browser and handles the callback for us
+        // Note: For iOS, it's a better UX. For macOS, it handles the sandbox more strictly.
+        
+        let session = ASWebAuthenticationSession(
+            url: url,
+            callbackURLScheme: "focusflow"
+        ) { callbackURL, error in
+            if let error = error {
+                print("❌ OAuth Error: \(error.localizedDescription)")
+                return
+            }
+            
+            if let callbackURL = callbackURL {
+                Task {
+                    try? await self.handleOAuthCallback(url: callbackURL)
+                }
+            }
+        }
+        
         #if os(iOS)
-        await UIApplication.shared.open(url)
+        session.presentationContextProvider = AuthPresentationContextHandler.shared
         #endif
+        
+        session.start()
     }
     
     // MARK: - Handle OAuth Callback
     func handleOAuthCallback(url: URL) async throws {
-        // Extract tokens from callback URL
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-              let queryItems = components.queryItems else {
-            throw NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid callback URL"])
+        do {
+            // 1. Ingest the session from URL
+            let session = try await supabase.auth.session(from: url)
+            
+            // 2. Fetch or Create profile based on the session user
+            try await syncUserProfile(sessionUser: session.user)
+            
+            // 3. Update UI state
+            isAuthenticated = true
+        } catch {
+            print("❌ Error handling OAuth callback: \(error.localizedDescription)")
+            errorMessage = "Authentication failed: \(error.localizedDescription)"
+            throw error
         }
-        
-        // Supabase will handle the session automatically
-        await checkAuthStatus()
+    }
+    
+    private func syncUserProfile(sessionUser: User) async throws {
+        do {
+            // 1. Create the user object from session data
+            let newUser = Models.User(
+                id: sessionUser.id,
+                email: sessionUser.email ?? "",
+                displayName: sessionUser.userMetadata["full_name"]?.value as? String ?? 
+                             sessionUser.userMetadata["name"]?.value as? String ?? "Google User",
+                avatarURL: sessionUser.userMetadata["avatar_url"]?.value as? String,
+                focusScore: 0,
+                createdAt: Date(),
+                updatedAt: Date()
+            )
+            
+            // 2. Try to UPSERT (Update or Insert) the profile
+            // This is safer than a simple insert as it won't fail if the user already exists
+            print("📝 Syncing user profile for: \(newUser.email)")
+            
+            try await supabase
+                .from("users")
+                .upsert(newUser)
+                .execute()
+            
+            self.currentUser = newUser
+        } catch {
+            print("❌ Error syncing user profile: \(error)")
+            
+            // If it's a "Database error", let's try to fetch what's already there 
+            // maybe the trigger created it for us!
+            do {
+                let existing: [Models.User] = try await supabase
+                    .from("users")
+                    .select()
+                    .eq("id", value: sessionUser.id.uuidString)
+                    .execute()
+                    .value
+                
+                if let profile = existing.first {
+                    print("✅ Found existing profile, proceeding...")
+                    self.currentUser = profile
+                } else {
+                    // If still missing and erroring, throw the original error
+                    throw error
+                }
+            } catch {
+                print("❌ Final profile sync failure: \(error)")
+                throw error
+            }
+        }
+    }
+
+
+}
+
+
+// Helper to provide the window for ASWebAuthenticationSession
+class AuthPresentationContextHandler: NSObject, ASWebAuthenticationPresentationContextProviding {
+    static let shared = AuthPresentationContextHandler()
+    
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        #if os(iOS)
+        // Accessing the window in iOS
+        let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
+        return scene?.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        #else
+        // Accessing the window in macOS
+        return NSApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        #endif
     }
 }
+
+

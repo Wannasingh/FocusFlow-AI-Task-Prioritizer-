@@ -16,7 +16,12 @@ class SupabaseManager {
     private init() {
         self.client = SupabaseClient(
             supabaseURL: URL(string: SupabaseConfig.supabaseURL)!,
-            supabaseKey: SupabaseConfig.supabaseAnonKey
+            supabaseKey: SupabaseConfig.supabaseAnonKey,
+            options: SupabaseClientOptions(
+                auth: .init(
+                    emitLocalSessionAsInitialSession: true
+                )
+            )
         )
     }
     
@@ -24,7 +29,7 @@ class SupabaseManager {
     func testConnection() async throws -> Bool {
         do {
             // Try to query the users table (just to test connection)
-            let _: [User] = try await client
+            let _: [Models.User] = try await client
                 .from("users")
                 .select()
                 .limit(1)
@@ -38,3 +43,4 @@ class SupabaseManager {
         }
     }
 }
+

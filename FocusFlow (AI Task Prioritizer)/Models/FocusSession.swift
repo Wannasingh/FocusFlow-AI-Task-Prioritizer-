@@ -7,14 +7,15 @@
 
 import Foundation
 
-enum SessionType: String, Codable {
-    case pomodoro = "pomodoro"
-    case deepWork = "deep_work"
-    case shortBreak = "short_break"
-    case longBreak = "long_break"
-}
+extension Models {
+    enum SessionType: String, Codable {
+        case pomodoro = "pomodoro"
+        case deepWork = "deep_work"
+        case shortBreak = "short_break"
+        case longBreak = "long_break"
+    }
 
-struct FocusSession: Identifiable, Codable {
+    struct FocusSession: Identifiable, Codable {
     let id: UUID
     var userId: UUID
     var taskId: UUID?
@@ -33,5 +34,6 @@ struct FocusSession: Identifiable, Codable {
         case durationMinutes = "duration_minutes"
         case sessionType = "session_type"
         case createdAt = "created_at"
+    }
     }
 }

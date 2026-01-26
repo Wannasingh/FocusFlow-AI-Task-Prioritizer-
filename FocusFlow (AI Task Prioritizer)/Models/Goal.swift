@@ -7,13 +7,14 @@
 
 import Foundation
 
-enum GoalStatus: String, Codable {
-    case active = "active"
-    case completed = "completed"
-    case paused = "paused"
-}
+extension Models {
+    enum GoalStatus: String, Codable {
+        case active = "active"
+        case completed = "completed"
+        case paused = "paused"
+    }
 
-struct Goal: Identifiable, Codable {
+    struct Goal: Identifiable, Codable {
     let id: UUID
     var userId: UUID
     var title: String
@@ -43,5 +44,6 @@ struct Goal: Identifiable, Codable {
         case status
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+    }
     }
 }

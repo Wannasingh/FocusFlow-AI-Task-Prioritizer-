@@ -7,14 +7,15 @@
 
 import Foundation
 
-struct User: Identifiable, Codable {
+extension Models {
+    struct User: Identifiable, Codable {
     let id: UUID
     var email: String
     var displayName: String
     var avatarURL: String?
-    var focusScore: Int
-    var createdAt: Date
-    var updatedAt: Date
+    var focusScore: Int?
+    var createdAt: Date?
+    var updatedAt: Date?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -24,5 +25,6 @@ struct User: Identifiable, Codable {
         case focusScore = "focus_score"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+    }
     }
 }
