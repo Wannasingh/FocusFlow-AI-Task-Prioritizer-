@@ -9,3 +9,6 @@
 // Supabase Configuration
 SUPABASE_URL = https:/$()/hczanbyriyiplfyvrxpd.supabase.co
 SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjemFuYnlyaXlpcGxmeXZyeHBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MjQ5MDIsImV4cCI6MjA4NTAwMDkwMn0.K4Gzr1f0hxLz23rlFnPGaiLbQIM3BSSyu9KDRHp8yf8
+
+// Gemini AI Configuration
+GEMINI_API_KEY = ***REMOVED***
