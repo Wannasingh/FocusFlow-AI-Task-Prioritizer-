@@ -413,19 +413,91 @@ extension View {
     }
 }
 
-// MARK: - Placeholder Add Task View
+// MARK: - Add Task View
 struct AddTaskView: View {
     @Environment(\.dismiss) var dismiss
+    @StateObject private var viewModel = TaskViewModel()
+    
+    @State private var title = ""
+    @State private var description = ""
+    @State private var category = Models.TaskCategory.work
+    @State private var dueDate = Date()
+    @State private var priority = Models.TaskPriority.medium
     
     var body: some View {
         NavigationView {
-            Text("Add Task Form")
-                .navigationTitle("New Task")
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Cancel") { dismiss() }
+            Form {
+                Section(header: Text("Task Details").font(.displayBold(12))) {
+                    TextField("Title", text: $title)
+                        .font(.bodyMedium(16))
+                    
+                    ZStack(alignment: .topLeading) {
+                        if description.isEmpty {
+                            Text("Description (Optional)")
+                                .foregroundColor(.gray.opacity(0.5))
+                                .padding(.top, 8)
+                        }
+                        TextEditor(text: $description)
+                            .frame(minHeight: 100)
+                    }
+                    .font(.bodyMedium(16))
+                }
+                
+                Section(header: Text("Categorization").font(.displayBold(12))) {
+                    Picker("Category", selection: $category) {
+                        ForEach(Models.TaskCategory.allCases, id: \.self) { cat in
+                            Text(cat.rawValue.capitalized).tag(cat)
+                        }
+                    }
+                    
+                    Picker("Manual Priority", selection: $priority) {
+                        ForEach(Models.TaskPriority.allCases, id: \.self) { prio in
+                            Text(prio.rawValue.capitalized).tag(prio)
+                        }
                     }
                 }
+                
+                Section(header: Text("Schedule").font(.displayBold(12))) {
+                    DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                }
+                
+                if viewModel.isLoading {
+                    HStack {
+                        Spacer()
+                        ProgressView("AI is analyzing priority...")
+                            .font(.displayBold(14))
+                        Spacer()
+                    }
+                    .padding()
+                }
+            }
+            .navigationTitle("New Task")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") { dismiss() }
+                        .font(.displayBold(14))
+                        .foregroundColor(.black)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Create") {
+                        Task {
+                            await viewModel.createTask(
+                                title: title,
+                                description: description.isEmpty ? nil : description,
+                                category: category,
+                                dueDate: dueDate,
+                                priority: priority
+                            )
+                            dismiss()
+                        }
+                    }
+                    .font(.displayBold(14))
+                    .foregroundColor(.black)
+                    .disabled(title.isEmpty || viewModel.isLoading)
+                }
+            }
         }
     }
 }

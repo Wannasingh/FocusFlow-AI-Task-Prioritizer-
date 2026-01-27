@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab: NavTab = .dashboard
+    @State private var selectedTab: NavTab = .home
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthService
     
@@ -15,12 +15,14 @@ struct MainTabView: View {
             // Main Content Area
             Group {
                 switch selectedTab {
-                case .dashboard:
+                case .home:
                     DashboardView()
                 case .tasks:
                     TaskListView()
-                case .insights:
-                    FocusStatisticsView()
+                case .focus:
+                    FocusTimerView()
+                case .profile:
+                    UserProfileView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -28,6 +30,33 @@ struct MainTabView: View {
             
             // Shared Bottom Navigation
             BottomNavBar(selectedTab: $selectedTab)
+            
+            // TEST LOGOUT BUTTON
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: {
+                        Task {
+                            try? await authService.signOut()
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                            Text("Logout (Test)")
+                        }
+                        .font(.bodyBold(10))
+                        .padding(8)
+                        .background(Color.neoMagenta)
+                        .foregroundColor(.black)
+                        .cornerRadius(8)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.black, lineWidth: 2))
+                        .shadow(color: .black, radius: 0, x: 2, y: 2)
+                    }
+                    .padding(.trailing, 16)
+                    .padding(.top, 50)
+                }
+                Spacer()
+            }
         }
         .edgesIgnoringSafeArea(.bottom)
         .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)

@@ -183,6 +183,8 @@ struct SignUpView: View {
                                 }
                                 
                                 // Facebook Sign In
+                                // TODO: Uncomment when Facebook OAuth is configured
+                                /*
                                 Button(action: { Task { try? await authService.signInWithFacebook() } }) {
                                     HStack(spacing: 12) {
                                         Image(systemName: "f.circle.fill")
@@ -198,6 +200,7 @@ struct SignUpView: View {
                                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
                                     .shadow(color: .black, radius: 0, x: 4, y: 4)
                                 }
+                                */
                             }
                         }
                         .padding(.horizontal, 24)

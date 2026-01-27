@@ -26,6 +26,23 @@ struct LoginView: View {
             
             // Main content
             VStack(spacing: 0) {
+                // Back Button
+                HStack {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.black)
+                            .frame(width: 44, height: 44)
+                            .background(Color.white)
+                            .clipShape(Circle())
+                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                    }
+                    .padding(.leading, 24)
+                    .padding(.top, 16)
+                    
+                    Spacer()
+                }
+                
                 Spacer()
                 
                 // Header
@@ -205,22 +222,36 @@ struct LoginView: View {
             VStack(spacing: 12) {
                 // Google Sign In
                 Button(action: { Task { try? await authService.signInWithGoogle() } }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "g.circle.fill")
-                            .font(.system(size: 24))
-                        Text("Continue with Google")
-                            .font(.system(size: 16, weight: .bold))
-                    }
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
-                    .shadow(color: .black, radius: 0, x: 4, y: 4)
+                    socialLoginLabel(icon: "g.circle.fill", title: "Continue with Google")
                 }
+                
+                // Facebook Sign In
+                // TODO: Uncomment when Facebook OAuth is configured
+                /*
+                Button(action: { Task { try? await authService.signInWithFacebook() } }) {
+                    socialLoginLabel(icon: "f.circle.fill", title: "Continue with Facebook", color: Color(hex: "#1877F2"))
+                }
+                */
             }
         }
+    }
+    
+    // Helper for Social Login Buttons
+    private func socialLoginLabel(icon: String, title: String, color: Color = .black) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(color == .black ? .black : color)
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+        }
+        .foregroundColor(.black)
+        .frame(maxWidth: .infinity)
+        .frame(height: 56)
+        .background(Color.white)
+        .cornerRadius(12)
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
+        .shadow(color: .black, radius: 0, x: 4, y: 4)
     }
     
     // MARK: - Footer
