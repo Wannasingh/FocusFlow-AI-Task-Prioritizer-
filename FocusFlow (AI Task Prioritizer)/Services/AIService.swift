@@ -6,7 +6,9 @@
 //
 
 import Foundation
+import Supabase
 import GoogleGenerativeAI
+import Combine
 
 class AIService {
     static let shared = AIService()

@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 class TaskViewModel: ObservableObject {
     @Published var tasks: [Models.Task] = []

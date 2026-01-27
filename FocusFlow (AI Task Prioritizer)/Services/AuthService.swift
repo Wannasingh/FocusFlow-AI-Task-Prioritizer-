@@ -306,19 +306,11 @@ class AuthPresentationContextHandler: NSObject, ASWebAuthenticationPresentationC
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         #if os(iOS)
         // Accessing the window in iOS
-        if #available(iOS 26.0, *) {
-            // Prefer the new designated initializer that takes a UIWindowScene
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                return ASPresentationAnchor(windowScene: windowScene)
-            } else {
-                // Fallback: create an empty anchor if no scene is available
-                return ASPresentationAnchor()
-            }
-        } else {
-            // Fallback for earlier iOS versions using a key window
-            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-            return scene?.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        // Prefer the new designated initializer that takes a UIWindowScene
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            return windowScene.windows.first { $0.isKeyWindow } ?? windowScene.windows.first ?? ASPresentationAnchor()
         }
+        return ASPresentationAnchor()
         #else
         // Accessing the window in macOS
         return NSApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()

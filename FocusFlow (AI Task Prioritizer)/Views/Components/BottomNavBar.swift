@@ -8,15 +8,26 @@
 import SwiftUI
 
 enum NavTab: String, CaseIterable {
-    case dashboard = "Dashboard"
+    case home = "Home"
     case tasks = "Tasks"
-    case insights = "Insights"
+    case focus = "Focus"
+    case profile = "Profile"
     
     var icon: String {
         switch self {
-        case .dashboard: return "square.grid.2x2.fill"
-        case .tasks: return "checkmark.square.fill"
-        case .insights: return "sparkles"
+        case .home: return "house.fill"
+        case .tasks: return "list.bullet.rectangle.fill"
+        case .focus: return "stopwatch.fill"
+        case .profile: return "person.fill"
+        }
+    }
+    
+    var highlightColor: Color {
+        switch self {
+        case .home: return .neoCyan
+        case .tasks: return .neoYellow
+        case .focus: return .neoPink
+        case .profile: return .neoPurple
         }
     }
 }
@@ -26,69 +37,71 @@ struct BottomNavBar: View {
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(NavTab.allCases, id: \.self) { tab in
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = tab
+        VStack(spacing: 0) {
+            // Top border
+            Rectangle()
+                .frame(height: 4)
+                .foregroundColor(.black)
+            
+            HStack(spacing: 0) {
+                ForEach(NavTab.allCases, id: \.self) { tab in
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedTab = tab
+                        }
+                    }) {
+                        VStack(spacing: 8) {
+                            tabIconView(tab: tab)
+                            
+                            Text(tab.rawValue)
+                                .font(.system(size: 14, weight: .black, design: .rounded))
+                                .foregroundColor(.black)
+                                .textCase(.uppercase)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
                     }
-                }) {
-                    VStack(spacing: 4) {
-                        Image(systemName: tab.icon)
-                            .font(.system(size: 24, weight: .bold))
-                        
-                        Text(tab.rawValue)
-                            .font(.displayBold(10))
-                            .textCase(.uppercase)
-                    }
-                    .foregroundColor(selectedTab == tab ? (colorScheme == .dark ? .primaryGreen : .black) : .gray)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .background(
-                        selectedTab == tab ?
-                        (colorScheme == .dark ? Color.black : Color.neoYellow) :
-                        Color.clear
-                    )
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                selectedTab == tab ? (colorScheme == .dark ? .white : .black) : .clear,
-                                lineWidth: 2
-                            )
-                    )
-                    .shadow(
-                        color: selectedTab == tab ? (colorScheme == .dark ? .primaryGreen : .black) : .clear,
-                        radius: 0,
-                        x: selectedTab == tab ? 2 : 0,
-                        y: selectedTab == tab ? 2 : 0
-                    )
-                    .offset(
-                        x: 0,
-                        y: selectedTab == tab ? -4 : 0
-                    )
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .buttonStyle(PlainButtonStyle())
             }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 24) // Extra padding for home indicator
+            .background(Color.white)
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 10)
-        .background(
-            (colorScheme == .dark ? Color.backgroundDarkAlt : Color.white)
-                .overlay(
-                    Rectangle()
-                        .frame(height: 4)
-                        .foregroundColor(colorScheme == .dark ? .white.opacity(0.2) : .black),
-                    alignment: .top
-                )
-        )
+    }
+    
+    @ViewBuilder
+    private func tabIconView(tab: NavTab) -> some View {
+        let isSelected = selectedTab == tab
+        
+        ZStack {
+            if isSelected {
+                // Background shadow for neubrutalism
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.black)
+                    .offset(x: 4, y: 4)
+                
+                // Active Tab Background
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(tab.highlightColor)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.black, lineWidth: 3)
+                    )
+            }
+            
+            Image(systemName: tab.icon)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.black)
+        }
+        .frame(width: 70, height: 70)
     }
 }
 
 #Preview {
     VStack {
         Spacer()
-        BottomNavBar(selectedTab: .constant(.dashboard))
+        BottomNavBar(selectedTab: .constant(.home))
     }
     .background(Color.backgroundLight)
 }

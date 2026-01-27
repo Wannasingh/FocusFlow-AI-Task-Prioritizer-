@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct MainTabView: View {
-    @State private var selectedTab: NavTab = .dashboard
+    @State private var selectedTab: NavTab = .home
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var authService: AuthService
     
@@ -15,12 +15,14 @@ struct MainTabView: View {
             // Main Content Area
             Group {
                 switch selectedTab {
-                case .dashboard:
+                case .home:
                     DashboardView()
                 case .tasks:
                     TaskListView()
-                case .insights:
-                    FocusStatisticsView()
+                case .focus:
+                    FocusTimerView()
+                case .profile:
+                    UserProfileView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
