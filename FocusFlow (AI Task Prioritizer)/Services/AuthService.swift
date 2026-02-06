@@ -162,6 +162,56 @@ class AuthService: ObservableObject {
         }
     }
     
+    // MARK: - Update Profile (ตาราง users)
+    func updateProfile(displayName: String, avatarURL: String?) async throws {
+        guard let user = currentUser else { return }
+        errorMessage = nil
+        
+        struct UserProfileUpdate: Encodable {
+            let display_name: String
+            let avatar_url: String?
+            let updated_at: Date
+        }
+        
+        let payload = UserProfileUpdate(
+            display_name: displayName.trimmingCharacters(in: .whitespacesAndNewlines),
+            avatar_url: avatarURL?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true ? nil : avatarURL,
+            updated_at: Date()
+        )
+        
+        try await supabase
+            .from("users")
+            .update(payload)
+            .eq("id", value: user.id.uuidString)
+            .execute()
+        
+        await fetchUserProfile(userId: user.id)
+    }
+    
+    /// อัปโหลดรูปโปรไฟล์ไป Supabase Storage bucket "avatars" แล้วคืน public URL
+    /// - Parameter imageData: ข้อมูลรูป JPEG
+    /// - Returns: URL สาธารณะของรูป (ใช้เก็บใน users.avatar_url)
+    func uploadAvatar(imageData: Data) async throws -> String {
+        guard let user = currentUser else { throw NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Not logged in"]) }
+        let path = "\(user.id.uuidString)/avatar.jpg"
+        
+        try await supabase.storage
+            .from("avatars")
+            .upload(
+                path,
+                data: imageData,
+                options: FileOptions(
+                    contentType: "image/jpeg",
+                    upsert: true
+                )
+            )
+        
+        let publicURL = try supabase.storage
+            .from("avatars")
+            .getPublicURL(path: path)
+        return publicURL.absoluteString
+    }
+    
     // MARK: - Private Helpers
     
     private func createUserProfile(userId: UUID, email: String, displayName: String) async throws {
@@ -305,15 +355,16 @@ class AuthPresentationContextHandler: NSObject, ASWebAuthenticationPresentationC
     
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         #if os(iOS)
-        // Accessing the window in iOS
-        // Prefer the new designated initializer that takes a UIWindowScene
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-            return windowScene.windows.first { $0.isKeyWindow } ?? windowScene.windows.first ?? ASPresentationAnchor()
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        if let window = scenes.lazy.flatMap(\.windows).first {
+            return window
         }
-        return ASPresentationAnchor()
+        if let scene = scenes.first {
+            return UIWindow(windowScene: scene)
+        }
+        fatalError("No window scene available for OAuth presentation")
         #else
-        // Accessing the window in macOS
-        return NSApplication.shared.windows.first { $0.isKeyWindow } ?? ASPresentationAnchor()
+        return NSApplication.shared.windows.first { $0.isKeyWindow } ?? NSApplication.shared.windows.first ?? NSWindow()
         #endif
     }
 }

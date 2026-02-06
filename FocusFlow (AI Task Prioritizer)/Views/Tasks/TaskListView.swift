@@ -46,7 +46,6 @@ struct TaskListView: View {
             fab
         }
         .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.backgroundLight)
-        .ignoresSafeArea(edges: .bottom)
         .sheet(isPresented: $showAddTask) {
             AddTaskView()
         }

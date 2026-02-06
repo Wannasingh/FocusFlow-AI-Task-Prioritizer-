@@ -33,75 +33,75 @@ enum NavTab: String, CaseIterable {
 }
 
 struct BottomNavBar: View {
+    /// Fixed height so the bar is the same size and position on every tab. Use for content padding in MainTabView.
+    static let barHeight: CGFloat = 64
+
     @Binding var selectedTab: NavTab
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
         VStack(spacing: 0) {
-            // Top border
             Rectangle()
-                .frame(height: 4)
+                .frame(height: 2)
                 .foregroundColor(.black)
             
-            HStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 0) {
                 ForEach(NavTab.allCases, id: \.self) { tab in
-                    Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedTab = tab
-                        }
-                    }) {
-                        VStack(spacing: 8) {
-                            tabIconView(tab: tab)
-                            
-                            Text(tab.rawValue)
-                                .font(.system(size: 14, weight: .black, design: .rounded))
-                                .foregroundColor(.black)
-                                .textCase(.uppercase)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                    tabButton(for: tab)
                 }
             }
             .padding(.horizontal, 8)
-            .padding(.bottom, 24) // Extra padding for home indicator
+            .frame(height: Self.barHeight - 2)
             .background(Color.white)
         }
+        .frame(height: Self.barHeight)
     }
     
+    /// ทุก tab ความสูงเท่ากัน + จัดแนวบน เพื่อไม่ให้ tab ใดเลื่อนลง
     @ViewBuilder
-    private func tabIconView(tab: NavTab) -> some View {
+    private func tabButton(for tab: NavTab) -> some View {
         let isSelected = selectedTab == tab
         
-        ZStack {
-            if isSelected {
-                // Background shadow for neubrutalism
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(Color.black)
-                    .offset(x: 4, y: 4)
-                
-                // Active Tab Background
-                RoundedRectangle(cornerRadius: 15)
-                    .fill(tab.highlightColor)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 15)
-                            .stroke(Color.black, lineWidth: 3)
-                    )
+        Button(action: {
+            withAnimation(.easeOut(duration: 0.2)) {
+                selectedTab = tab
             }
-            
-            Image(systemName: tab.icon)
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.black)
+        }) {
+            VStack(spacing: 4) {
+                ZStack {
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(tab.highlightColor)
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.black, lineWidth: 2)
+                            )
+                    }
+                    Image(systemName: tab.icon)
+                        .font(.system(size: isSelected ? 20 : 18, weight: .bold))
+                        .foregroundColor(isSelected ? .black : .black.opacity(0.6))
+                }
+                .frame(width: 40, height: 40)
+                
+                Text(tab.rawValue.uppercased())
+                    .font(.system(size: 9, weight: .black, design: .rounded))
+                    .foregroundColor(isSelected ? .black : .black.opacity(0.6))
+                    .lineLimit(1)
+                    .frame(height: 14)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 58)
+            .contentShape(Rectangle())
         }
-        .frame(width: 70, height: 70)
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
 #Preview {
     VStack {
         Spacer()
-        BottomNavBar(selectedTab: .constant(.home))
+        BottomNavBar(selectedTab: .constant(.focus))
     }
     .background(Color.backgroundLight)
 }

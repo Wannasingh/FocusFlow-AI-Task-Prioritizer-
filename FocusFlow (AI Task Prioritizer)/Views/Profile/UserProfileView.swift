@@ -9,8 +9,11 @@ import SwiftUI
 
 struct UserProfileView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var userName = "Alex Chen"
-    @State private var userEmail = "alex.chen@example.com"
+    @EnvironmentObject var authService: AuthService
+    @State private var showEditProfile = false
+    
+    /// ข้อมูลจาก DB ผ่าน AuthService (ตาราง users)
+    private var user: Models.User? { authService.currentUser }
     
     var body: some View {
         ScrollView {
@@ -32,35 +35,50 @@ struct UserProfileView: View {
             .padding(.horizontal, 24)
         }
         .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+        .sheet(isPresented: $showEditProfile) {
+            EditProfileView()
+                .environmentObject(authService)
+        }
     }
     
-    // MARK: - Profile Header
+    // MARK: - Profile Header (จาก DB: users ผ่าน authService.currentUser)
     private var profileHeader: some View {
         VStack(spacing: 16) {
-            // Avatar
-            Circle()
-                .fill(Color.neoYellow)
-                .frame(width: 120, height: 120)
-                .overlay(
-                    Text("AC")
-                        .font(.system(size: 48, weight: .black, design: .rounded))
-                        .foregroundColor(.black)
-                )
-                .overlay(Circle().stroke(Color.black, lineWidth: 4))
-                .shadow(color: .black, radius: 0, x: 6, y: 6)
+            // Avatar – จาก Supabase Storage (avatar_url) หรือ initial จาก display_name
+            Group {
+                if let urlString = user?.avatarURL, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image.resizable().scaledToFill()
+                        case .failure(_), .empty:
+                            avatarInitialsView
+                        @unknown default:
+                            avatarInitialsView
+                        }
+                    }
+                    .frame(width: 120, height: 120)
+                    .clipShape(Circle())
+                } else {
+                    avatarInitialsView
+                }
+            }
+            .frame(width: 120, height: 120)
+            .overlay(Circle().stroke(Color.black, lineWidth: 4))
+            .shadow(color: .black, radius: 0, x: 6, y: 6)
             
-            // Name
-            Text(userName)
+            // Name (จาก DB: display_name)
+            Text(user?.displayName ?? "User")
                 .font(.system(size: 28, weight: .black, design: .rounded))
                 .foregroundColor(colorScheme == .dark ? .white : .black)
             
-            // Email
-            Text(userEmail)
+            // Email (จาก DB: email)
+            Text(user?.email ?? "")
                 .font(.bodyMedium(16))
                 .foregroundColor(.textSecondary)
             
             // Edit Profile Button
-            Button(action: {}) {
+            Button(action: { showEditProfile = true }) {
                 Text("EDIT PROFILE")
                     .font(.displayBold(14))
                     .foregroundColor(.black)
@@ -78,7 +96,28 @@ struct UserProfileView: View {
         .padding(.top, 24)
     }
     
-    // MARK: - Stats Section
+    private var avatarInitialsView: some View {
+        Circle()
+            .fill(Color.neoYellow)
+            .overlay(
+                Text(avatarInitials)
+                    .font(.system(size: 48, weight: .black, design: .rounded))
+                    .foregroundColor(.black)
+            )
+    }
+    
+    /// Initial สำหรับ avatar (2 ตัวอักษรจาก display_name)
+    private var avatarInitials: String {
+        let name = user?.displayName ?? ""
+        let parts = name.split(separator: " ").map(String.init)
+        if parts.count >= 2, let f = parts.first?.first, let s = parts.last?.first {
+            return "\(f)\(s)".uppercased()
+        }
+        let prefix = String(name.prefix(2)).uppercased()
+        return prefix.isEmpty ? "?" : prefix
+    }
+    
+    // MARK: - Stats Section (focusScore จาก DB, อื่นๆ ยัง placeholder จนมีตาราง/API)
     private var statsSection: some View {
         VStack(spacing: 16) {
             Text("YOUR STATS")
@@ -87,16 +126,23 @@ struct UserProfileView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             HStack(spacing: 16) {
-                statCard(value: "84", label: "Focus Score", color: .neoYellow)
-                statCard(value: "127", label: "Tasks Done", color: .neoCyan)
+                statCard(value: "\(user?.focusScore ?? 0)", label: "Focus Score", color: .neoYellow)
+                statCard(value: tasksDoneText, label: "Tasks Done", color: .neoCyan)
             }
             
             HStack(spacing: 16) {
-                statCard(value: "42h", label: "Focus Time", color: .neoMagenta)
-                statCard(value: "#5", label: "Rank", color: .neoLime)
+                statCard(value: focusTimeText, label: "Focus Time", color: .neoMagenta)
+                statCard(value: rankText, label: "Rank", color: .neoLime)
             }
         }
     }
+    
+    /// Placeholder จนกว่าจะมีตาราง/API สำหรับ tasks done
+    private var tasksDoneText: String { "0" }
+    /// Placeholder จนกว่าจะมีตาราง/API สำหรับ focus time
+    private var focusTimeText: String { "0h" }
+    /// Placeholder จนกว่าจะมีตาราง/API สำหรับ rank
+    private var rankText: String { "—" }
     
     private func statCard(value: String, label: String, color: Color) -> some View {
         VStack(spacing: 8) {
@@ -120,19 +166,32 @@ struct UserProfileView: View {
         .shadow(color: .black, radius: 0, x: 3, y: 3)
     }
     
-    // MARK: - Recent Activity
+    // MARK: - Recent Activity (placeholder จนกว่าจะมีตาราง activity)
     private var recentActivity: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("RECENT ACTIVITY")
                 .font(.displayBold(14))
                 .foregroundColor(colorScheme == .dark ? .white : .black)
             
-            VStack(spacing: 12) {
-                activityRow(icon: "checkmark.circle.fill", text: "Completed 'Design System Update'", time: "2h ago", color: .primaryGreen)
-                activityRow(icon: "trophy.fill", text: "Unlocked 'Week Warrior' achievement", time: "1d ago", color: .neoOrange)
-                activityRow(icon: "target", text: "Reached goal: 50 Tasks", time: "3d ago", color: .neoCyan)
+            if recentActivities.isEmpty {
+                Text("No recent activity")
+                    .font(.bodyMedium(14))
+                    .foregroundColor(.textSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else {
+                VStack(spacing: 12) {
+                    ForEach(recentActivities, id: \.text) { item in
+                        activityRow(icon: item.icon, text: item.text, time: item.time, color: item.color)
+                    }
+                }
             }
         }
+    }
+    
+    /// ข้อมูล activity – ตอนนี้ว่าง, ต่อไปดึงจาก DB/API
+    private var recentActivities: [(icon: String, text: String, time: String, color: Color)] {
+        [] // TODO: fetch จากตาราง activity / events
     }
     
     private func activityRow(icon: String, text: String, time: String, color: Color) -> some View {
@@ -199,4 +258,5 @@ struct UserProfileView: View {
 
 #Preview {
     UserProfileView()
+        .environmentObject(AuthService())
 }

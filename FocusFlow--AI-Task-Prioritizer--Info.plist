@@ -49,6 +49,8 @@
 		<string>fbapi</string>
 		<string>fb-messenger-share-api</string>
 	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>FocusFlow needs access to your photos to set your profile picture.</string>
 	<key>GEMINI_API_KEY</key>
 	<string>$(GEMINI_API_KEY)</string>
 	<key>SUPABASE_ANON_KEY</key>
