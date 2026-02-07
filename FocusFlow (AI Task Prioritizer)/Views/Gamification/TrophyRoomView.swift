@@ -36,7 +36,9 @@ struct TrophyRoomView: View {
             }
             .padding(.horizontal, 24)
         }
-        .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+        .background(
+            LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        )
     }
     
     // MARK: - Header
@@ -69,23 +71,15 @@ struct TrophyRoomView: View {
     private func statCard(value: String, label: String, color: Color) -> some View {
         VStack(spacing: 8) {
             Text(value)
-                .font(.system(size: 36, weight: .black, design: .rounded))
-                .foregroundColor(.black)
-            
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
             Text(label)
-                .font(.displayBold(12))
-                .foregroundColor(.black)
-                .textCase(.uppercase)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(color)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black, lineWidth: 3)
-        )
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
+        .glassBackground(cornerRadius: 16)
     }
     
     // MARK: - Achievements Grid
@@ -99,55 +93,40 @@ struct TrophyRoomView: View {
     
     private func achievementCard(_ achievement: AchievementItem) -> some View {
         VStack(spacing: 12) {
-            // Icon
             Text(achievement.icon)
-                .font(.system(size: 48))
-                .opacity(achievement.isUnlocked ? 1.0 : 0.3)
-                .frame(width: 80, height: 80)
-                .background(Color.white)
-                .clipShape(Circle())
-                .overlay(Circle().stroke(Color.black, lineWidth: 3))
-                .shadow(color: .black, radius: 0, x: achievement.isUnlocked ? 3 : 0, y: achievement.isUnlocked ? 3 : 0)
-            
-            // Title
+                .font(.system(size: 40))
+                .opacity(achievement.isUnlocked ? 1.0 : 0.4)
+                .frame(width: 64, height: 64)
+                .background(.ultraThinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1))
             Text(achievement.title)
-                .font(.displayBold(14))
-                .foregroundColor(.black)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-            
-            // Description
             Text(achievement.description)
-                .font(.bodyRegular(11))
-                .foregroundColor(.black.opacity(0.7))
+                .font(.caption)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
-            
-            // Lock/Unlock Badge
             if !achievement.isUnlocked {
                 HStack(spacing: 4) {
                     Image(systemName: "lock.fill")
-                        .font(.system(size: 10, weight: .bold))
-                    Text("LOCKED")
-                        .font(.displayBold(10))
+                        .font(.system(size: 9, weight: .semibold))
+                    Text("Locked")
+                        .font(.system(size: 9, weight: .semibold))
                 }
                 .foregroundColor(.white)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.black)
-                .cornerRadius(8)
+                .background(Color.gray)
+                .clipShape(Capsule())
             }
         }
         .padding(16)
         .frame(maxWidth: .infinity)
-        .background(achievement.isUnlocked ? achievement.color : Color.gray.opacity(0.3))
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black, lineWidth: 3)
-        )
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
-        .opacity(achievement.isUnlocked ? 1.0 : 0.6)
+        .glassBackground(cornerRadius: 16)
+        .opacity(achievement.isUnlocked ? 1.0 : 0.85)
     }
 }
 

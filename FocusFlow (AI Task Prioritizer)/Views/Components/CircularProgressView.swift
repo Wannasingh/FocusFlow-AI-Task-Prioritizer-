@@ -49,60 +49,37 @@ struct CircularProgressView: View {
 
 // MARK: - Focus Score Display
 struct FocusScoreView: View {
+    @Environment(\.colorScheme) var colorScheme
     let score: Int
     let progress: Double
     let message: String
     
     var body: some View {
         ZStack {
-            // Circular progress
             CircularProgressView(
                 progress: progress,
-                lineWidth: 12,
-                backgroundColor: Color.black.opacity(0.1),
-                foregroundColor: .black
+                lineWidth: 10,
+                backgroundColor: colorScheme == .dark ? Color.white.opacity(0.2) : Color.black.opacity(0.12),
+                foregroundColor: colorScheme == .dark ? .neoCyan : .neoCyan
             )
             .padding(24)
             
-            // Content
             VStack(spacing: 8) {
-                Text("FOCUS SCORE")
-                    .font(.displayBold(14))
-                    .tracking(2)
-                    .padding(.bottom, 4)
-                    .overlay(
-                        Rectangle()
-                            .frame(height: 2)
-                            .foregroundColor(.black),
-                        alignment: .bottom
-                    )
-                
+                Text("Focus Score")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary)
                 Text("\(score)")
-                    .font(.system(size: 100, weight: .black, design: .rounded))
-                    .tracking(-4)
-                
+                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
                 Text(message)
-                    .font(.displayBold(12))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
                     .padding(.vertical, 6)
-                    .background(Color.black)
-                    .cornerRadius(20)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.white, lineWidth: 2)
-                    )
-                    .rotationEffect(.degrees(-2))
+                    .background(.ultraThinMaterial, in: Capsule())
             }
         }
         .aspectRatio(1, contentMode: .fit)
-        .background(Color.neoYellow)
-        .clipShape(Circle())
-        .overlay(
-            Circle()
-                .stroke(Color.black, lineWidth: 4)
-        )
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
     }
 }
 

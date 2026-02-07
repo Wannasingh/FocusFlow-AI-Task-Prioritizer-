@@ -33,7 +33,9 @@ struct DashboardView: View {
                     Spacer(minLength: 40)
                 }
             }
-            .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+            .background(
+                LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
         }
         .sheet(isPresented: $showAddTask) {
             AddTaskView()
@@ -49,42 +51,29 @@ struct DashboardView: View {
     private var header: some View {
         HStack {
             HStack(spacing: 12) {
-                // Avatar
                 Circle()
-                    .fill(Color.neoYellow)
+                    .fill(Color.neoYellow.opacity(0.9))
                     .frame(width: 48, height: 48)
-                    .overlay(
-                        Circle()
-                            .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-                    )
-                    .shadow(color: colorScheme == .dark ? .white : .black, radius: 0, x: 4, y: 4)
+                    .overlay(Circle().strokeBorder(.white.opacity(0.4), lineWidth: 1))
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(userName)
                         .font(.displayBold(20))
                         .foregroundColor(colorScheme == .dark ? .white : .black)
-                    
                     Text("OCT 24")
                         .font(.mono(12, weight: .bold))
                         .foregroundColor(.textSecondary)
                 }
             }
-            
             Spacer()
-            
-            // Notifications
             Button(action: {}) {
                 Image(systemName: "bell.fill")
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
+                    .foregroundStyle(colorScheme == .dark ? .white : .black)
                     .frame(width: 40, height: 40)
-                    .background(Color.clear)
-                    .cornerRadius(10)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-                    )
+                    .glassBar(cornerRadius: 12)
             }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding(.horizontal, 24)
         .padding(.top, 16)
@@ -98,6 +87,7 @@ struct DashboardView: View {
             message: "You are on fire today!"
         )
         .frame(height: 340)
+        .glassBackground(cornerRadius: 24)
         .padding(.horizontal, 24)
     }
     
@@ -143,235 +133,124 @@ struct DashboardView: View {
     
     // MARK: - Task Cards
     private var taskCard1: some View {
-        NeubrutalistCard(backgroundColor: .neoCyan) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    HStack(spacing: 8) {
-                        Rectangle()
-                            .fill(Color.white)
-                            .frame(width: 24, height: 24)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                            .shadow(color: Color.black.opacity(0.2), radius: 0, x: 2, y: 2)
-                        
-                        Text("TO DO")
-                            .font(.displayBold(10))
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
-                            .background(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                    }
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 4) {
-                        Image(systemName: "timer")
-                            .font(.system(size: 14, weight: .bold))
-                        Text("2h left")
-                            .font(.mono(12, weight: .bold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.black)
-                    .cornerRadius(4)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("TO DO")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                HStack(spacing: 4) {
+                    Image(systemName: "timer")
+                        .font(.system(size: 12, weight: .medium))
+                    Text("2h left")
+                        .font(.caption.weight(.medium))
                 }
-                
-                Text("Design System Update")
-                    .font(.system(size: 24, weight: .black, design: .rounded))
-                    .foregroundColor(.black)
-                    .tracking(-0.5)
-                
-                HStack {
-                    HStack(spacing: -12) {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 40, height: 40)
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                        
-                        Circle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 40, height: 40)
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {}) {
-                        Text("START")
-                            .font(.displayBold(12))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 8)
-                            .background(Color.black)
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.clear, lineWidth: 2)
-                            )
-                    }
+                .foregroundStyle(.secondary)
+            }
+            
+            Text("Design System Update")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
+            
+            HStack {
+                HStack(spacing: -8) {
+                    Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
+                    Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
+                }
+                Spacer()
+                Button(action: {}) {
+                    Text("Start")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 8)
+                        .background(Color.neoCyan)
+                        .clipShape(Capsule())
                 }
             }
         }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassBackground(cornerRadius: 20)
     }
     
     private var taskCard2: some View {
-        NeubrutalistCard(backgroundColor: .neoMagenta) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    HStack(spacing: 8) {
-                        Triangle()
-                            .fill(Color.white)
-                            .frame(width: 24, height: 24)
-                            .overlay(
-                                Triangle()
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                        
-                        Text("IN PROGRESS")
-                            .font(.displayBold(10))
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
-                            .background(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                    }
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 4) {
-                        Image(systemName: "hourglass")
-                            .font(.system(size: 14, weight: .bold))
-                        Text("45m left")
-                            .font(.mono(12, weight: .bold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.black)
-                    .cornerRadius(4)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("IN PROGRESS")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                HStack(spacing: 4) {
+                    Image(systemName: "hourglass")
+                        .font(.system(size: 12, weight: .medium))
+                    Text("45m left")
+                        .font(.caption.weight(.medium))
                 }
-                
-                Text("AI Model Training")
-                    .font(.system(size: 24, weight: .black, design: .rounded))
-                    .foregroundColor(.black)
-                    .tracking(-0.5)
-                
-                HStack {
-                    Circle()
-                        .fill(Color.white)
-                        .frame(width: 40, height: 40)
-                        .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                    
-                    Spacer()
-                    
-                    Button(action: {}) {
-                        Text("RESUME")
-                            .font(.displayBold(12))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 8)
-                            .background(Color.black)
-                            .cornerRadius(8)
-                    }
+                .foregroundStyle(.secondary)
+            }
+            
+            Text("AI Model Training")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
+            
+            HStack {
+                Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
+                Spacer()
+                Button(action: {}) {
+                    Text("Resume")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 8)
+                        .background(Color.neoMagenta)
+                        .clipShape(Capsule())
                 }
             }
         }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassBackground(cornerRadius: 20)
     }
     
     private var taskCard3: some View {
-        NeubrutalistCard(backgroundColor: .neoLime) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    HStack(spacing: 8) {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 24, height: 24)
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                            .shadow(color: Color.black.opacity(0.2), radius: 0, x: 1, y: 1)
-                        
-                        Text("10:00 AM")
-                            .font(.displayBold(10))
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 4)
-                            .background(Color.white)
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                    }
-                    
-                    Spacer()
-                    
-                    Text("Scheduled")
-                        .font(.mono(12, weight: .bold))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.2))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.black.opacity(0.2), lineWidth: 1)
-                        )
-                        .cornerRadius(4)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("10:00 AM")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("Scheduled")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
+            
+            Text("Client Meeting")
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
+            
+            HStack {
+                HStack(spacing: -8) {
+                    Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
+                    Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
+                    Circle().fill(.ultraThinMaterial).frame(width: 32, height: 32)
+                        .overlay(Text("+2").font(.caption2.bold()).foregroundStyle(.secondary))
                 }
-                
-                Text("Client Meeting")
-                    .font(.system(size: 24, weight: .black, design: .rounded))
-                    .foregroundColor(.black)
-                    .tracking(-0.5)
-                
-                HStack {
-                    HStack(spacing: -12) {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 40, height: 40)
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                        
-                        Circle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(width: 40, height: 40)
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                        
-                        Circle()
-                            .fill(Color.black)
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                Text("+2")
-                                    .font(.displayBold(10))
-                                    .foregroundColor(.white)
-                            )
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {}) {
-                        Text("DETAILS")
-                            .font(.displayBold(12))
-                            .foregroundColor(.black)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.white.opacity(0.5))
-                            .cornerRadius(8)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                    }
+                Spacer()
+                Button(action: {}) {
+                    Text("Details")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .glassBar(cornerRadius: 10)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassBackground(cornerRadius: 20)
     }
     
     // MARK: - FAB
@@ -505,3 +384,4 @@ struct AddTaskView: View {
 #Preview {
     DashboardView()
 }
+

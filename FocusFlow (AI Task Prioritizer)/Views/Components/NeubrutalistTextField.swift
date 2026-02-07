@@ -44,21 +44,13 @@ struct NeubrutalistTextField: View {
             }
             .font(.bodyMedium(16))
             .padding(.horizontal, 16)
-            .frame(height: 56)
-            .background(colorScheme == .dark ? Color(hex: "#1a1a1a") : .white)
+            .frame(height: 52)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
             .foregroundColor(colorScheme == .dark ? .white : .textPrimary)
-            .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(colorScheme == .dark ? .white : .black, lineWidth: 3)
+                    .strokeBorder(.white.opacity(isFocused ? 0.4 : 0.2), lineWidth: 1)
             )
-            .shadow(
-                color: colorScheme == .dark ? .primaryYellow : .black,
-                radius: 0,
-                x: isFocused ? 2 : 4,
-                y: isFocused ? 2 : 4
-            )
-            .offset(x: isFocused ? 2 : 0, y: isFocused ? 2 : 0)
             .animation(.easeInOut(duration: 0.15), value: isFocused)
         }
     }

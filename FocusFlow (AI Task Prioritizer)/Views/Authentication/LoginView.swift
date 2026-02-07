@@ -17,50 +17,147 @@ struct LoginView: View {
     
     var body: some View {
         ZStack {
-            // Background - clean beige/cream
-            Color(hex: "#f8f8f5")
+            // Background gradient behind glass
+            LinearGradient(colors: [Color.black.opacity(0.85), Color.blue.opacity(0.55), Color.purple.opacity(0.45)], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
-            
-            // Decorative elements
-            decorativeElements
-            
-            // Main content
-            VStack(spacing: 0) {
-                // Back Button
+
+            // Subtle bokeh lights
+            ZStack {
+                Circle().fill(Color.white.opacity(0.08)).blur(radius: 60).frame(width: 220, height: 220).offset(x: -140, y: -280)
+                Circle().fill(Color.cyan.opacity(0.10)).blur(radius: 80).frame(width: 260, height: 260).offset(x: 150, y: -200)
+                Circle().fill(Color.purple.opacity(0.10)).blur(radius: 90).frame(width: 300, height: 300).offset(x: 100, y: 340)
+            }
+            .allowsHitTesting(false)
+
+            VStack(spacing: 20) {
+                // Top bar
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "arrow.left")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.black)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.white)
                             .frame(width: 44, height: 44)
-                            .background(Color.white)
-                            .clipShape(Circle())
-                            .overlay(Circle().stroke(Color.black, lineWidth: 2))
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
                     }
-                    .padding(.leading, 24)
-                    .padding(.top, 16)
-                    
+                    .buttonStyle(PlainButtonStyle())
                     Spacer()
                 }
-                
-                Spacer()
-                
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+
+                Spacer(minLength: 10)
+
                 // Header
-                header
-                    .padding(.bottom, 40)
-                
+                VStack(spacing: 12) {
+                    Text("FOCUS\nFLOW")
+                        .font(.system(size: 52, weight: .black, design: .rounded))
+                        .multilineTextAlignment(.center)
+                        .foregroundStyle(.white)
+                        .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 6)
+                    Text("Master your tasks.")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.9))
+                }
+                .glassBackground(cornerRadius: 24)
+                .padding(.horizontal, 24)
+
                 // Login form
-                loginForm
-                    .padding(.horizontal, 32)
-                
+                VStack(spacing: 18) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "envelope").font(.system(size: 14, weight: .semibold))
+                            Text("Email").font(.system(size: 13, weight: .semibold))
+                        }
+                        .foregroundStyle(.white.opacity(0.9))
+                        TextField("name@example.com", text: $email)
+                            .font(.system(size: 16))
+                            .padding(.horizontal, 16)
+                            .frame(height: 52)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                            .foregroundStyle(.white)
+                            .textInputAutocapitalization(.never)
+                            .keyboardType(.emailAddress)
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "lock").font(.system(size: 14, weight: .semibold))
+                            Text("Password").font(.system(size: 13, weight: .semibold))
+                        }
+                        .foregroundStyle(.white.opacity(0.9))
+                        SecureField("••••••••", text: $password)
+                            .font(.system(size: 16))
+                            .padding(.horizontal, 16)
+                            .frame(height: 52)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                            .foregroundStyle(.white)
+                    }
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            Task {
+                                if !email.isEmpty { try? await authService.resetPassword(email: email) }
+                            }
+                        }) {
+                            Text("Forgot Password?")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.white.opacity(0.9))
+                                .underline()
+                        }
+                    }
+                    Button(action: handleLogin) {
+                        HStack(spacing: 8) {
+                            if authService.isLoading {
+                                ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Text("Log in").font(.system(size: 16, weight: .semibold))
+                                Image(systemName: "arrow.right").font(.system(size: 14, weight: .semibold))
+                            }
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(Color.neoCyan)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.3), lineWidth: 1))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(authService.isLoading)
+
+                    HStack {
+                        Rectangle().fill(Color.white.opacity(0.25)).frame(height: 1)
+                        Text("or").font(.system(size: 13, weight: .medium)).foregroundStyle(.white.opacity(0.8))
+                        Rectangle().fill(Color.white.opacity(0.25)).frame(height: 1)
+                    }
+                    .padding(.vertical, 6)
+
+                    VStack(spacing: 12) {
+                        Button(action: { Task { try? await authService.signInWithGoogle() } }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "g.circle.fill").font(.system(size: 20))
+                                Text("Continue with Google").font(.system(size: 15, weight: .semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+                            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .glassBackground(cornerRadius: 24)
+                .padding(.horizontal, 24)
+
                 Spacer()
-                
-                // Footer
-                footer
-                    .padding(.bottom, 40)
-                
-                // Bottom stripe
-                bottomStripe
+
+                // Bottom decorative stripe replaced by a thin glass bar
+                Color.clear.frame(height: 1)
+                    .overlay(Rectangle().fill(Color.white.opacity(0.25)).frame(height: 1))
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 8)
             }
         }
         .sheet(isPresented: $showSignUp) {
@@ -110,56 +207,38 @@ struct LoginView: View {
     // MARK: - Login Form
     private var loginForm: some View {
         VStack(spacing: 24) {
-            // Email Field
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: "envelope")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.black)
-                    Text("EMAIL")
-                        .font(.system(size: 14, weight: .bold, design: .default))
-                        .foregroundColor(.black)
-                        .tracking(1)
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Email")
+                        .font(.system(size: 13, weight: .semibold))
                 }
-                
+                .foregroundColor(.black)
                 TextField("name@example.com", text: $email)
-                    .font(.system(size: 16, weight: .regular, design: .default))
+                    .font(.system(size: 16))
                     .padding(.horizontal, 16)
-                    .frame(height: 56)
-                    .background(Color.white)
-                    .foregroundColor(.black)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 3)
-                    )
+                    .frame(height: 52)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
                     .autocapitalization(.none)
                     .keyboardType(.emailAddress)
             }
             
-            // Password Field
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: "lock")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.black)
-                    Text("PASSWORD")
-                        .font(.system(size: 14, weight: .bold, design: .default))
-                        .foregroundColor(.black)
-                        .tracking(1)
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Password")
+                        .font(.system(size: 13, weight: .semibold))
                 }
-                
+                .foregroundColor(.black)
                 SecureField("••••••••", text: $password)
-                    .font(.system(size: 16, weight: .regular, design: .default))
+                    .font(.system(size: 16))
                     .padding(.horizontal, 16)
-                    .frame(height: 56)
-                    .background(Color.white)
-                    .foregroundColor(.black)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 3)
-                    )
+                    .frame(height: 52)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
             }
             
             // Forgot password
@@ -179,48 +258,38 @@ struct LoginView: View {
                 }
             }
             
-            // Login button
             Button(action: handleLogin) {
                 HStack(spacing: 8) {
                     if authService.isLoading {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
                     } else {
-                        Text("LOGIN")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .tracking(2)
-                        
+                        Text("Log in")
+                            .font(.system(size: 16, weight: .semibold))
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 18, weight: .bold))
+                            .font(.system(size: 14, weight: .semibold))
                     }
                 }
-                .foregroundColor(.black)
+                .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(Color.primaryYellow)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.black, lineWidth: 3)
-                )
-                .shadow(color: .black, radius: 0, x: 6, y: 6)
+                .frame(height: 52)
+                .background(Color.neoCyan)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.3), lineWidth: 1))
             }
             .disabled(authService.isLoading)
             .padding(.top, 8)
             
-            // Divider
             HStack {
-                Rectangle().fill(Color.black).frame(height: 2)
-                Text("OR")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.black)
-                Rectangle().fill(Color.black).frame(height: 2)
+                Rectangle().fill(Color.black.opacity(0.2)).frame(height: 1)
+                Text("or")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+                Rectangle().fill(Color.black.opacity(0.2)).frame(height: 1)
             }
             .padding(.vertical, 8)
             
-            // Social Login Buttons
             VStack(spacing: 12) {
-                // Google Sign In
                 Button(action: { Task { try? await authService.signInWithGoogle() } }) {
                     socialLoginLabel(icon: "g.circle.fill", title: "Continue with Google")
                 }
@@ -236,22 +305,19 @@ struct LoginView: View {
         }
     }
     
-    // Helper for Social Login Buttons
     private func socialLoginLabel(icon: String, title: String, color: Color = .black) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 24))
+                .font(.system(size: 20))
                 .foregroundColor(color == .black ? .black : color)
             Text(title)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 15, weight: .semibold))
         }
         .foregroundColor(.black)
         .frame(maxWidth: .infinity)
-        .frame(height: 56)
-        .background(Color.white)
-        .cornerRadius(12)
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
+        .frame(height: 52)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.25), lineWidth: 1))
     }
     
     // MARK: - Footer

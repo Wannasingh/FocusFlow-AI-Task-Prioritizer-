@@ -162,28 +162,18 @@ class AuthService: ObservableObject {
         }
     }
     
-    // MARK: - Update Profile (ตาราง users)
+    // MARK: - Update Profile (ตาราง users) — ใช้ RPC เพื่อไม่ติด RLS
     func updateProfile(displayName: String, avatarURL: String?) async throws {
         guard let user = currentUser else { return }
         errorMessage = nil
         
-        struct UserProfileUpdate: Encodable {
-            let display_name: String
-            let avatar_url: String?
-            let updated_at: Date
-        }
+        _ = try? await supabase.auth.refreshSession()
         
-        let payload = UserProfileUpdate(
-            display_name: displayName.trimmingCharacters(in: .whitespacesAndNewlines),
-            avatar_url: avatarURL?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true ? nil : avatarURL,
-            updated_at: Date()
-        )
+        let name = displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let url = avatarURL?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == true ? nil : avatarURL
         
-        try await supabase
-            .from("users")
-            .update(payload)
-            .eq("id", value: user.id.uuidString)
-            .execute()
+        let params: [String: String?] = ["p_display_name": name, "p_avatar_url": url]
+        try await supabase.rpc("update_my_profile", params: params).execute()
         
         await fetchUserProfile(userId: user.id)
     }
@@ -281,9 +271,12 @@ class AuthService: ObservableObject {
         do {
             // 1. Ingest the session from URL
             let session = try await supabase.auth.session(from: url)
+            // 2. Refresh เพื่อให้ได้ user_metadata เต็มจาก provider (รวม picture จาก Google)
+            _ = try? await supabase.auth.refreshSession()
+            let sessionUser = (try? await supabase.auth.session)?.user ?? session.user
             
-            // 2. Fetch or Create profile based on the session user
-            try await syncUserProfile(sessionUser: session.user)
+            // 3. Fetch or Create profile based on the session user
+            try await syncUserProfile(sessionUser: sessionUser)
             
             // 3. Update UI state
             isAuthenticated = true
@@ -294,30 +287,67 @@ class AuthService: ObservableObject {
         }
     }
     
+    /// ดึง URL รูปจาก user_metadata (Google ใช้ "picture", บาง provider ใช้ "avatar_url")
+    private func avatarURLFromMetadata(_ sessionUser: User) -> String? {
+        let keys = ["picture", "avatar_url", "avatar", "image_url"]
+        for key in keys {
+            if let s = sessionUser.userMetadata[key]?.value as? String, !s.isEmpty, s.hasPrefix("http") {
+                return s
+            }
+        }
+        return nil
+    }
+    
     private func syncUserProfile(sessionUser: User) async throws {
         do {
-            // 1. Create the user object from session data
-            let newUser = Models.User(
+            // ชื่อจาก Google ใช้เฉพาะครั้งแรก (user ใหม่); ถ้ามีแถวใน DB แล้ว ใช้ display_name จาก DB เสมอ
+            let googleName = sessionUser.userMetadata["full_name"]?.value as? String
+                ?? sessionUser.userMetadata["name"]?.value as? String
+                ?? "Google User"
+            let googleAvatarURL = avatarURLFromMetadata(sessionUser)
+            
+            let existing: [Models.User]? = try? await supabase
+                .from("users")
+                .select()
+                .eq("id", value: sessionUser.id.uuidString)
+                .execute()
+                .value
+            
+            let displayName: String
+            let avatarURL: String?
+            let createdAt: Date
+            let updatedAt = Date()
+            
+            if let profile = existing?.first {
+                // มีแถวใน DB แล้ว → ใช้ชื่อและรูปจาก DB (ไม่เขียนทับจาก Google)
+                displayName = profile.displayName
+                avatarURL = profile.avatarURL
+                createdAt = profile.createdAt ?? updatedAt
+            } else {
+                // User ใหม่ → ใช้ชื่อจาก Google ครั้งแรก; รูปถ้ามีจาก metadata ก็ใช้
+                displayName = googleName
+                avatarURL = googleAvatarURL
+                createdAt = updatedAt
+            }
+            
+            let userToSave = Models.User(
                 id: sessionUser.id,
                 email: sessionUser.email ?? "",
-                displayName: sessionUser.userMetadata["full_name"]?.value as? String ?? 
-                             sessionUser.userMetadata["name"]?.value as? String ?? "Google User",
-                avatarURL: sessionUser.userMetadata["avatar_url"]?.value as? String,
-                focusScore: 0,
-                createdAt: Date(),
-                updatedAt: Date()
+                displayName: displayName,
+                avatarURL: avatarURL,
+                focusScore: existing?.first?.focusScore ?? 0,
+                createdAt: createdAt,
+                updatedAt: updatedAt
             )
             
-            // 2. Try to UPSERT (Update or Insert) the profile
-            // This is safer than a simple insert as it won't fail if the user already exists
-            print("📝 Syncing user profile for: \(newUser.email)")
+            print("📝 Syncing user profile for: \(userToSave.email) (displayName: \(displayName))")
             
             try await supabase
                 .from("users")
-                .upsert(newUser)
+                .upsert(userToSave)
                 .execute()
             
-            self.currentUser = newUser
+            self.currentUser = userToSave
         } catch {
             print("❌ Error syncing user profile: \(error)")
             

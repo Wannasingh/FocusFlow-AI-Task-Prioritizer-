@@ -18,6 +18,7 @@ struct SettingsView: View {
             VStack(spacing: 24) {
                 // Header
                 header
+                    .glassBackground(cornerRadius: 20)
                 
                 // Account Section
                 accountSection
@@ -35,7 +36,9 @@ struct SettingsView: View {
             }
             .padding(.horizontal, 24)
         }
-        .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+        .background(
+            LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        )
     }
     
     // MARK: - Header
@@ -62,11 +65,12 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionTitle("ACCOUNT")
             
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 settingRow(icon: "person.fill", title: "Edit Profile", showChevron: true) {}
                 settingRow(icon: "envelope.fill", title: "Change Email", showChevron: true) {}
                 settingRow(icon: "lock.fill", title: "Change Password", showChevron: true) {}
             }
+            .glassBackground(cornerRadius: 16)
         }
     }
     
@@ -75,12 +79,13 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionTitle("PREFERENCES")
             
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 toggleRow(icon: "bell.fill", title: "Notifications", isOn: $notificationsEnabled)
                 toggleRow(icon: "speaker.wave.2.fill", title: "Sound Effects", isOn: $soundEnabled)
                 toggleRow(icon: "moon.fill", title: "Dark Mode", isOn: $darkModeEnabled)
                 settingRow(icon: "clock.fill", title: "Focus Timer Settings", showChevron: true) {}
             }
+            .glassBackground(cornerRadius: 16)
         }
     }
     
@@ -89,36 +94,28 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             sectionTitle("ABOUT")
             
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 settingRow(icon: "info.circle.fill", title: "About FocusFlow", showChevron: true) {}
                 settingRow(icon: "doc.text.fill", title: "Privacy Policy", showChevron: true) {}
                 settingRow(icon: "checkmark.shield.fill", title: "Terms of Service", showChevron: true) {}
                 
-                // Version
                 HStack {
                     Image(systemName: "app.badge.fill")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(colorScheme == .dark ? .white : .black)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(colorScheme == .dark ? .white : .black)
                         .frame(width: 40, height: 40)
-                    
                     Text("Version")
                         .font(.bodyMedium(16))
                         .foregroundColor(colorScheme == .dark ? .white : .black)
-                    
                     Spacer()
-                    
                     Text("1.0.0")
                         .font(.mono(14, weight: .bold))
                         .foregroundColor(.textSecondary)
                 }
                 .padding(16)
-                .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.white)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-                )
+                .glassSubtle(cornerRadius: 12)
             }
+            .glassBackground(cornerRadius: 16)
         }
     }
     
@@ -127,22 +124,18 @@ struct SettingsView: View {
         Button(action: {}) {
             HStack {
                 Image(systemName: "rectangle.portrait.and.arrow.right")
-                    .font(.system(size: 20, weight: .bold))
-                
-                Text("LOGOUT")
-                    .font(.displayBold(16))
+                    .font(.system(size: 18, weight: .semibold))
+                Text("Logout")
+                    .font(.system(size: 16, weight: .semibold))
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .padding(20)
-            .background(Color.red)
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.black, lineWidth: 3)
-            )
-            .shadow(color: .black, radius: 0, x: 4, y: 4)
+            .padding(18)
+            .background(Color.red.opacity(0.9))
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Color.white.opacity(0.2), lineWidth: 1))
         }
+        .buttonStyle(PlainButtonStyle())
     }
     
     // MARK: - Helper Views
@@ -157,56 +150,39 @@ struct SettingsView: View {
         Button(action: action) {
             HStack {
                 Image(systemName: icon)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                    .frame(width: 40, height: 40)
-                
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(colorScheme == .dark ? .white : .black)
+                    .frame(width: 36, height: 36)
                 Text(title)
                     .font(.bodyMedium(16))
                     .foregroundColor(colorScheme == .dark ? .white : .black)
-                
                 Spacer()
-                
                 if showChevron {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.textSecondary)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.secondary)
                 }
             }
-            .padding(16)
-            .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.white)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-            )
+            .padding(14)
         }
+        .buttonStyle(PlainButtonStyle())
     }
     
     private func toggleRow(icon: String, title: String, isOn: Binding<Bool>) -> some View {
         HStack {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-                .frame(width: 40, height: 40)
-            
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(colorScheme == .dark ? .white : .black)
+                .frame(width: 36, height: 36)
             Text(title)
                 .font(.bodyMedium(16))
                 .foregroundColor(colorScheme == .dark ? .white : .black)
-            
             Spacer()
-            
             Toggle("", isOn: isOn)
                 .labelsHidden()
-                .tint(Color.primaryGreen)
+                .tint(Color.neoCyan)
         }
-        .padding(16)
-        .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-        )
+        .padding(14)
     }
 }
 

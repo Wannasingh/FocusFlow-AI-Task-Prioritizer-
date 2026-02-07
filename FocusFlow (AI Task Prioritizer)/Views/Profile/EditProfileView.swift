@@ -28,55 +28,52 @@ struct EditProfileView: View {
                         Button(action: { showImagePicker = true }) {
                             HStack(spacing: 8) {
                                 Image(systemName: "photo.badge.plus")
-                                Text("CHANGE PHOTO")
-                                    .font(.displayBold(12))
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text("Change photo")
+                                    .font(.system(size: 14, weight: .semibold))
                             }
-                            .foregroundColor(.black)
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
                             .padding(.horizontal, 20)
                             .padding(.vertical, 12)
-                            .background(Color.neoYellow)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
+                            .glassBar(cornerRadius: 12)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.bottom, 8)
                     
-                    NeubrutalistTextField(
-                        label: "Display Name",
-                        icon: "person.fill",
-                        placeholder: "Your name",
-                        text: $displayName
-                    )
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "person.fill").font(.system(size: 16, weight: .semibold))
+                            Text("Display Name").font(.system(size: 13, weight: .semibold))
+                        }
+                        .foregroundStyle(.white.opacity(0.9))
+                        TextField("Your name", text: $displayName)
+                            .font(.system(size: 16))
+                            .padding(.horizontal, 16)
+                            .frame(height: 52)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                    }
                     
-                    // Email แสดงอย่างเดียว (แก้ที่ Auth ไม่ได้จาก profile)
                     VStack(alignment: .leading, spacing: 8) {
                         HStack(spacing: 8) {
                             Image(systemName: "envelope.fill")
-                                .font(.system(size: 18, weight: .bold))
-                            Text("EMAIL")
-                                .font(.displayBold(14))
-                                .textCase(.uppercase)
-                                .tracking(1.2)
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Email")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.secondary)
                         }
                         .foregroundColor(colorScheme == .dark ? .white : .textPrimary)
-                        
                         Text(user?.email ?? "")
                             .font(.bodyMedium(16))
                             .foregroundColor(.textSecondary)
                             .padding(.horizontal, 16)
-                            .frame(height: 56)
+                            .frame(height: 52)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(colorScheme == .dark ? Color(hex: "#1a1a1a") : Color.gray.opacity(0.15))
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(colorScheme == .dark ? Color.gray : Color.black.opacity(0.3), lineWidth: 2)
-                            )
+                            .glassSubtle(cornerRadius: 12)
                     }
-                    
+
                     if let msg = errorMessage {
                         Text(msg)
                             .font(.bodyMedium(14))
@@ -88,29 +85,28 @@ struct EditProfileView: View {
                         HStack {
                             if isLoading {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
                             } else {
-                                Text("SAVE CHANGES")
-                                    .font(.displayBold(14))
+                                Text("Save changes")
+                                    .font(.system(size: 16, weight: .semibold))
                             }
                         }
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(Color.neoLime)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.black, lineWidth: 2)
-                        )
-                        .shadow(color: .black, radius: 0, x: 3, y: 3)
+                        .background(Color.neoCyan)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.3), lineWidth: 1))
                     }
+                    .buttonStyle(PlainButtonStyle())
                     .disabled(isLoading || displayName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .padding(.top, 8)
                 }
                 .padding(24)
             }
-            .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+            .background(
+                LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
             .navigationTitle("Edit Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -131,14 +127,17 @@ struct EditProfileView: View {
         }
     }
     
+    private static let avatarSize: CGFloat = 120
+    private static let avatarCornerRadius: CGFloat = 24
+    
     private var avatarPreview: some View {
         Group {
             if let img = selectedImage {
                 Image(uiImage: img)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 120, height: 120)
-                    .clipShape(Circle())
+                    .frame(width: Self.avatarSize, height: Self.avatarSize)
+                    .clipShape(RoundedRectangle(cornerRadius: Self.avatarCornerRadius))
             } else if let urlString = user?.avatarURL, let url = URL(string: urlString) {
                 AsyncImage(url: url) { phase in
                     switch phase {
@@ -152,19 +151,18 @@ struct EditProfileView: View {
                         avatarPlaceholder
                     }
                 }
-                .frame(width: 120, height: 120)
-                .clipShape(Circle())
+                .frame(width: Self.avatarSize, height: Self.avatarSize)
+                .clipShape(RoundedRectangle(cornerRadius: Self.avatarCornerRadius))
             } else {
                 avatarPlaceholder
             }
         }
-        .frame(width: 120, height: 120)
-        .overlay(Circle().stroke(Color.black, lineWidth: 4))
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
+        .frame(width: Self.avatarSize, height: Self.avatarSize)
+        .overlay(RoundedRectangle(cornerRadius: Self.avatarCornerRadius).strokeBorder(.white.opacity(0.4), lineWidth: 1))
     }
     
     private var avatarPlaceholder: some View {
-        Circle()
+        RoundedRectangle(cornerRadius: Self.avatarCornerRadius)
             .fill(Color.neoYellow)
             .overlay(
                 Text(avatarInitials)
@@ -183,22 +181,43 @@ struct EditProfileView: View {
         return prefix.isEmpty ? "?" : prefix
     }
     
+    /// ลดขนาดรูปก่อนอัปโหลด ให้ตอบสนองเร็วขึ้น
+    private func resizedAvatarData(from image: UIImage, maxSide: CGFloat = 512, quality: CGFloat = 0.65) -> Data? {
+        let scale = min(maxSide / image.size.width, maxSide / image.size.height, 1)
+        guard scale < 1 else { return image.jpegData(compressionQuality: quality) }
+        let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+        UIGraphicsBeginImageContextWithOptions(newSize, true, 1)
+        image.draw(in: CGRect(origin: .zero, size: newSize))
+        let resized = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return resized?.jpegData(compressionQuality: quality)
+    }
+    
     private func saveProfile() {
         errorMessage = nil
         isLoading = true
         Task {
-            do {
-                var finalAvatarURL: String? = user?.avatarURL
-                if let image = selectedImage,
-                   let jpegData = image.jpegData(compressionQuality: 0.8) {
+            var finalAvatarURL: String? = user?.avatarURL
+            var uploadFailedMessage: String?
+            if let image = selectedImage,
+               let jpegData = resizedAvatarData(from: image) {
+                do {
                     let url = try await authService.uploadAvatar(imageData: jpegData)
                     finalAvatarURL = url
+                } catch {
+                    uploadFailedMessage = "Photo: \(error.localizedDescription)"
                 }
+            }
+            do {
                 try await authService.updateProfile(
                     displayName: displayName,
                     avatarURL: finalAvatarURL
                 )
-                dismiss()
+                if let msg = uploadFailedMessage {
+                    errorMessage = "Profile saved. \(msg)"
+                } else {
+                    dismiss()
+                }
             } catch {
                 errorMessage = error.localizedDescription
             }

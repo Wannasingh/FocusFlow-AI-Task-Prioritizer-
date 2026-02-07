@@ -24,6 +24,7 @@ struct GoalTrackingView: View {
                 VStack(spacing: 24) {
                     // Header
                     header
+                        .glassBackground(cornerRadius: 20)
                     
                     // Goals List
                     VStack(spacing: 20) {
@@ -36,7 +37,9 @@ struct GoalTrackingView: View {
                 }
                 .padding(.horizontal, 24)
             }
-            .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+            .background(
+                LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            )
             
             // FAB
             fab
@@ -77,87 +80,62 @@ struct GoalTrackingView: View {
     // MARK: - Goal Card
     private func goalCard(_ goal: GoalItem) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Title and Progress
             HStack {
                 Text(goal.title)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
-                
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
                 Spacer()
-                
                 Text("\(Int(goal.progress * 100))%")
-                    .font(.displayBold(16))
-                    .foregroundColor(.black)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
             }
-            
-            // Progress Bar
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    // Background
-                    Rectangle()
-                        .fill(Color.white.opacity(0.3))
-                        .frame(height: 12)
-                        .overlay(
-                            Rectangle()
-                                .stroke(Color.black, lineWidth: 2)
-                        )
-                    
-                    // Progress
-                    Rectangle()
-                        .fill(Color.black)
-                        .frame(width: geometry.size.width * goal.progress, height: 12)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.2) : Color.black.opacity(0.1))
+                        .frame(height: 10)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(goal.color)
+                        .frame(width: geometry.size.width * goal.progress, height: 10)
                 }
             }
-            .frame(height: 12)
-            
-            // Stats
+            .frame(height: 10)
             HStack {
                 HStack(spacing: 4) {
                     Image(systemName: "flag.fill")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: 11, weight: .semibold))
                     Text("\(Int(goal.current))/\(Int(goal.target)) \(goal.unit)")
-                        .font(.mono(12, weight: .bold))
+                        .font(.caption.weight(.medium))
                 }
-                .foregroundColor(.black)
-                
+                .foregroundStyle(.secondary)
                 Spacer()
-                
                 if let deadline = goal.deadline {
                     HStack(spacing: 4) {
                         Image(systemName: "calendar")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 11, weight: .semibold))
                         Text(deadline)
-                            .font(.mono(12, weight: .bold))
+                            .font(.caption.weight(.medium))
                     }
-                    .foregroundColor(.black)
+                    .foregroundStyle(.secondary)
                 }
             }
         }
         .padding(20)
-        .background(goal.color)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black, lineWidth: 3)
-        )
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
+        .glassBackground(cornerRadius: 16)
     }
     
     // MARK: - FAB
     private var fab: some View {
         Button(action: { showAddGoal = true }) {
             Image(systemName: "plus")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.black)
-                .frame(width: 64, height: 64)
-                .background(Color.primaryGreen)
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.black, lineWidth: 4)
-                )
-                .shadow(color: .black, radius: 0, x: 4, y: 4)
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(width: 56, height: 56)
+                .background(Color.neoCyan)
+                .clipShape(Circle())
+                .overlay(Circle().strokeBorder(Color.white.opacity(0.4), lineWidth: 1))
         }
+        .buttonStyle(PlainButtonStyle())
         .padding(.trailing, 24)
         .padding(.bottom, 24)
     }

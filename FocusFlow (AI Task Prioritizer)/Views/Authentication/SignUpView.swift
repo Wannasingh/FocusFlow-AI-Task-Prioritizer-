@@ -20,220 +20,128 @@ struct SignUpView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background
-                Color(hex: "#f8f8f5")
+                LinearGradient(colors: [Color.black.opacity(0.9), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
-                
+
+                ZStack {
+                    Circle().fill(Color.white.opacity(0.07)).blur(radius: 70).frame(width: 240, height: 240).offset(x: -120, y: -260)
+                    Circle().fill(Color.cyan.opacity(0.10)).blur(radius: 90).frame(width: 280, height: 280).offset(x: 160, y: -120)
+                    Circle().fill(Color.purple.opacity(0.10)).blur(radius: 100).frame(width: 320, height: 320).offset(x: -60, y: 360)
+                }
+                .allowsHitTesting(false)
+
                 ScrollView {
-                    VStack(spacing: 32) {
-                        // Header
-                        VStack(spacing: 16) {
+                    VStack(spacing: 24) {
+                        VStack(spacing: 12) {
                             Text("JOIN\nFOCUSFLOW")
-                                .font(.system(size: 56, weight: .black, design: .rounded))
-                                .tracking(-2)
+                                .font(.system(size: 52, weight: .black, design: .rounded))
                                 .multilineTextAlignment(.center)
-                                .foregroundColor(.black)
-                            
+                                .foregroundStyle(.white)
+                                .shadow(color: .black.opacity(0.4), radius: 8, x: 0, y: 6)
                             Text("Start your productivity journey")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(.black)
+                                .foregroundStyle(.white.opacity(0.9))
                         }
-                        .padding(.top, 40)
-                        
-                        // Sign up form
-                        VStack(spacing: 24) {
-                            // Display Name
+                        .glassBackground(cornerRadius: 24)
+                        .padding(.top, 24)
+
+                        VStack(spacing: 18) {
                             VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "person")
-                                        .font(.system(size: 16, weight: .bold))
-                                    Text("DISPLAY NAME")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .tracking(1)
-                                }
-                                .foregroundColor(.black)
-                                
+                                labelRow(icon: "person", title: "Display name")
                                 TextField("Your Name", text: $displayName)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .foregroundColor(.black)
-                                    .cornerRadius(12)
-                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
+                                    .frame(height: 52)
+                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                                    .foregroundStyle(.white)
                             }
-                            
-                            // Email
                             VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "envelope")
-                                        .font(.system(size: 16, weight: .bold))
-                                    Text("EMAIL")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .tracking(1)
-                                }
-                                .foregroundColor(.black)
-                                
+                                labelRow(icon: "envelope", title: "Email")
                                 TextField("name@example.com", text: $email)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .foregroundColor(.black)
-                                    .cornerRadius(12)
-                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
-                                    .autocapitalization(.none)
+                                    .frame(height: 52)
+                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                                    .foregroundStyle(.white)
+                                    .textInputAutocapitalization(.never)
                                     .keyboardType(.emailAddress)
                             }
-                            
-                            // Password
                             VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "lock")
-                                        .font(.system(size: 16, weight: .bold))
-                                    Text("PASSWORD")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .tracking(1)
-                                }
-                                .foregroundColor(.black)
-                                
+                                labelRow(icon: "lock", title: "Password")
                                 SecureField("••••••••", text: $password)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .foregroundColor(.black)
-                                    .cornerRadius(12)
-                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
+                                    .frame(height: 52)
+                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                                    .foregroundStyle(.white)
                             }
-                            
-                            // Confirm Password
                             VStack(alignment: .leading, spacing: 8) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "lock.fill")
-                                        .font(.system(size: 16, weight: .bold))
-                                    Text("CONFIRM PASSWORD")
-                                        .font(.system(size: 14, weight: .bold))
-                                        .tracking(1)
-                                }
-                                .foregroundColor(.black)
-                                
+                                labelRow(icon: "lock.fill", title: "Confirm password")
                                 SecureField("••••••••", text: $confirmPassword)
                                     .font(.system(size: 16))
                                     .padding(.horizontal, 16)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .foregroundColor(.black)
-                                    .cornerRadius(12)
-                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
+                                    .frame(height: 52)
+                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                                    .foregroundStyle(.white)
                             }
-                            
-                            // Sign up button
+
                             Button(action: handleSignUp) {
                                 HStack(spacing: 8) {
                                     if authService.isLoading {
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                        ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
                                     } else {
-                                        Text("CREATE ACCOUNT")
-                                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                                            .tracking(2)
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 18, weight: .bold))
+                                        Text("Create account").font(.system(size: 16, weight: .semibold))
+                                        Image(systemName: "checkmark").font(.system(size: 14, weight: .semibold))
                                     }
                                 }
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(Color.primaryYellow)
-                                .cornerRadius(12)
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
-                                .shadow(color: .black, radius: 0, x: 6, y: 6)
+                                .frame(height: 52)
+                                .background(Color.neoCyan)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.3), lineWidth: 1))
                             }
+                            .buttonStyle(PlainButtonStyle())
                             .disabled(authService.isLoading)
-                            .padding(.top, 8)
-                            
-                            // Divider
-                            HStack {
-                                Rectangle().fill(Color.black).frame(height: 2)
-                                Text("OR")
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.black)
-                                Rectangle().fill(Color.black).frame(height: 2)
-                            }
-                            .padding(.vertical, 8)
-                            
-                            // Social Login Buttons
-                            VStack(spacing: 12) {
-                                // Google Sign In
-                                Button(action: { Task { try? await authService.signInWithGoogle() } }) {
-                                    HStack(spacing: 12) {
-                                        Image(systemName: "g.circle.fill")
-                                            .font(.system(size: 24))
-                                        Text("Continue with Google")
-                                            .font(.system(size: 16, weight: .bold))
-                                    }
-                                    .foregroundColor(.black)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color.white)
-                                    .cornerRadius(12)
-                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
-                                    .shadow(color: .black, radius: 0, x: 4, y: 4)
-                                }
-                                
-                                // Facebook Sign In
-                                // TODO: Uncomment when Facebook OAuth is configured
-                                /*
-                                Button(action: { Task { try? await authService.signInWithFacebook() } }) {
-                                    HStack(spacing: 12) {
-                                        Image(systemName: "f.circle.fill")
-                                            .font(.system(size: 24))
-                                        Text("Continue with Facebook")
-                                            .font(.system(size: 16, weight: .bold))
-                                    }
-                                    .foregroundColor(.black)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 56)
-                                    .background(Color(hex: "#1877F2").opacity(0.2))
-                                    .cornerRadius(12)
-                                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.black, lineWidth: 3))
-                                    .shadow(color: .black, radius: 0, x: 4, y: 4)
-                                }
-                                */
-                            }
                         }
-                        .padding(.horizontal, 24)
-                        
-                        Spacer(minLength: 40)
+                        .glassBackground(cornerRadius: 24)
+
+                        Spacer(minLength: 20)
                     }
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 24)
                 }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.black)
-                            .frame(width: 40, height: 40)
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black, lineWidth: 2))
-                    }
-                }
-            }
-            .alert("Error", isPresented: $showError) {
-                Button("OK", role: .cancel) {}
-            } message: {
-                Text(authService.errorMessage ?? "An error occurred")
-            }
-            .alert("Success!", isPresented: $showSuccess) {
-                Button("OK") { dismiss() }
-            } message: {
-                Text("Account created successfully! Please check your email to verify your account.")
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 40, height: 40)
+                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .alert("Error", isPresented: $showError) { Button("OK", role: .cancel) {} } message: { Text(authService.errorMessage ?? "An error occurred") }
+        .alert("Success!", isPresented: $showSuccess) { Button("OK") { dismiss() } } message: { Text("Account created successfully! Please check your email to verify your account.") }
+    }
+    
+    private func labelRow(icon: String, title: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .semibold))
+            Text(title)
+                .font(.system(size: 13, weight: .semibold))
+        }
+        .foregroundStyle(.white.opacity(0.9))
     }
     
     private func handleSignUp() {

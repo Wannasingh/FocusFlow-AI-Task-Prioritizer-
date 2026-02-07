@@ -40,59 +40,54 @@ struct BottomNavBar: View {
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        VStack(spacing: 0) {
-            Rectangle()
-                .frame(height: 2)
-                .foregroundColor(.black)
-            
-            HStack(alignment: .top, spacing: 0) {
-                ForEach(NavTab.allCases, id: \.self) { tab in
-                    tabButton(for: tab)
-                }
+        HStack(spacing: 0) {
+            ForEach(NavTab.allCases, id: \.self) { tab in
+                tabButton(for: tab)
             }
-            .padding(.horizontal, 8)
-            .frame(height: Self.barHeight - 2)
-            .background(Color.white)
         }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 20)
         .frame(height: Self.barHeight)
+        .background(.ultraThinMaterial)
+        .overlay(
+            RoundedRectangle(cornerRadius: 0)
+                .stroke(Color.white.opacity(0.12), lineWidth: 1)
+        )
+        .overlay(alignment: .top) {
+            Rectangle()
+                .frame(height: 1)
+                .foregroundStyle(.white.opacity(0.2))
+        }
     }
     
-    /// ทุก tab ความสูงเท่ากัน + จัดแนวบน เพื่อไม่ให้ tab ใดเลื่อนลง
     @ViewBuilder
     private func tabButton(for tab: NavTab) -> some View {
         let isSelected = selectedTab == tab
         
         Button(action: {
-            withAnimation(.easeOut(duration: 0.2)) {
-                selectedTab = tab
-            }
+            withAnimation(.easeOut(duration: 0.2)) { selectedTab = tab }
         }) {
-            VStack(spacing: 4) {
-                ZStack {
-                    if isSelected {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(tab.highlightColor)
-                            .frame(width: 40, height: 40)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                    }
-                    Image(systemName: tab.icon)
-                        .font(.system(size: isSelected ? 20 : 18, weight: .bold))
-                        .foregroundColor(isSelected ? .black : .black.opacity(0.6))
-                }
-                .frame(width: 40, height: 40)
-                
-                Text(tab.rawValue.uppercased())
-                    .font(.system(size: 9, weight: .black, design: .rounded))
-                    .foregroundColor(isSelected ? .black : .black.opacity(0.6))
+            VStack(spacing: 6) {
+                Image(systemName: tab.icon)
+                    .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? tab.highlightColor : (colorScheme == .dark ? .white.opacity(0.5) : .black.opacity(0.4)))
+                Text(tab.rawValue)
+                    .font(.system(size: 10, weight: isSelected ? .medium : .regular))
+                    .foregroundColor(isSelected ? (colorScheme == .dark ? .white : .black) : .textSecondary)
                     .lineLimit(1)
-                    .frame(height: 14)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 58)
             .contentShape(Rectangle())
+            .background(
+                isSelected ?
+                RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.08)) :
+                nil
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.white.opacity(0.18), lineWidth: isSelected ? 1 : 0)
+            )
         }
         .buttonStyle(PlainButtonStyle())
     }

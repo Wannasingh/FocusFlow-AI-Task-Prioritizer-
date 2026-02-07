@@ -17,92 +17,92 @@ struct UserProfileView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Profile Header
+            VStack(spacing: 20) {
                 profileHeader
-                
-                // Stats Cards
+                    .glassBackground(cornerRadius: 20)
+                actionsRow
+                    .glassBackground(cornerRadius: 16)
                 statsSection
-                
-                // Recent Activity
-                recentActivity
-                
-                // Settings Button
-                settingsButton
-                
-                Spacer(minLength: 40)
+                settingsRow
+                    .glassBackground(cornerRadius: 16)
+                Spacer(minLength: 32)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 20)
         }
-        .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+        .background(
+            LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        )
         .sheet(isPresented: $showEditProfile) {
             EditProfileView()
                 .environmentObject(authService)
         }
     }
     
-    // MARK: - Profile Header (จาก DB: users ผ่าน authService.currentUser)
+    // MARK: - Profile Header (minimal)
     private var profileHeader: some View {
-        VStack(spacing: 16) {
-            // Avatar – จาก Supabase Storage (avatar_url) หรือ initial จาก display_name
+        VStack(spacing: 12) {
             Group {
                 if let urlString = user?.avatarURL, let url = URL(string: urlString) {
                     AsyncImage(url: url) { phase in
                         switch phase {
-                        case .success(let image):
-                            image.resizable().scaledToFill()
-                        case .failure(_), .empty:
-                            avatarInitialsView
-                        @unknown default:
-                            avatarInitialsView
+                        case .success(let image): image.resizable().scaledToFill()
+                        case .failure(_), .empty: avatarInitialsView
+                        @unknown default: avatarInitialsView
                         }
                     }
-                    .frame(width: 120, height: 120)
-                    .clipShape(Circle())
+                    .frame(width: 88, height: 88)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                 } else {
                     avatarInitialsView
+                        .frame(width: 88, height: 88)
                 }
             }
-            .frame(width: 120, height: 120)
-            .overlay(Circle().stroke(Color.black, lineWidth: 4))
-            .shadow(color: .black, radius: 0, x: 6, y: 6)
+            .frame(width: 88, height: 88)
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(colorScheme == .dark ? Color.white.opacity(0.3) : Color.black.opacity(0.15), lineWidth: 1))
             
-            // Name (จาก DB: display_name)
             Text(user?.displayName ?? "User")
-                .font(.system(size: 28, weight: .black, design: .rounded))
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-            
-            // Email (จาก DB: email)
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundStyle(.white)
             Text(user?.email ?? "")
-                .font(.bodyMedium(16))
-                .foregroundColor(.textSecondary)
-            
-            // Edit Profile Button
-            Button(action: { showEditProfile = true }) {
-                Text("EDIT PROFILE")
-                    .font(.displayBold(14))
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.black, lineWidth: 2)
-                    )
-                    .shadow(color: .black, radius: 0, x: 3, y: 3)
-            }
+                .font(.footnote)
+                .foregroundStyle(.white.opacity(0.8))
         }
-        .padding(.top, 24)
+        .padding(.top, 20)
+    }
+    
+    private var actionsRow: some View {
+        HStack(spacing: 12) {
+            Button(action: { showEditProfile = true }) {
+                Text("Edit profile")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .glassBar(cornerRadius: 12)
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button(action: { Task { try? await authService.signOut() } }) {
+                Text("Logout")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.red.opacity(0.85))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.2), lineWidth: 1))
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
     }
     
     private var avatarInitialsView: some View {
-        Circle()
-            .fill(Color.neoYellow)
+        RoundedRectangle(cornerRadius: 20)
+            .fill(Color.neoYellow.opacity(0.9))
             .overlay(
                 Text(avatarInitials)
-                    .font(.system(size: 48, weight: .black, design: .rounded))
-                    .foregroundColor(.black)
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.black.opacity(0.8))
             )
     }
     
@@ -117,142 +117,50 @@ struct UserProfileView: View {
         return prefix.isEmpty ? "?" : prefix
     }
     
-    // MARK: - Stats Section (focusScore จาก DB, อื่นๆ ยัง placeholder จนมีตาราง/API)
+    // MARK: - Stats (minimal row)
     private var statsSection: some View {
-        VStack(spacing: 16) {
-            Text("YOUR STATS")
-                .font(.displayBold(14))
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            HStack(spacing: 16) {
-                statCard(value: "\(user?.focusScore ?? 0)", label: "Focus Score", color: .neoYellow)
-                statCard(value: tasksDoneText, label: "Tasks Done", color: .neoCyan)
-            }
-            
-            HStack(spacing: 16) {
-                statCard(value: focusTimeText, label: "Focus Time", color: .neoMagenta)
-                statCard(value: rankText, label: "Rank", color: .neoLime)
-            }
+        HStack(spacing: 0) {
+            statItem(value: "\(user?.focusScore ?? 0)", label: "Focus")
+            Divider().frame(height: 32).background(colorScheme == .dark ? Color.white.opacity(0.2) : Color.black.opacity(0.1))
+            statItem(value: "0", label: "Tasks")
+            Divider().frame(height: 32).background(colorScheme == .dark ? Color.white.opacity(0.2) : Color.black.opacity(0.1))
+            statItem(value: "—", label: "Rank")
         }
+        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
+        .glassSubtle(cornerRadius: 12)
     }
-    
-    /// Placeholder จนกว่าจะมีตาราง/API สำหรับ tasks done
-    private var tasksDoneText: String { "0" }
-    /// Placeholder จนกว่าจะมีตาราง/API สำหรับ focus time
-    private var focusTimeText: String { "0h" }
-    /// Placeholder จนกว่าจะมีตาราง/API สำหรับ rank
-    private var rankText: String { "—" }
-    
-    private func statCard(value: String, label: String, color: Color) -> some View {
-        VStack(spacing: 8) {
+
+    private func statItem(value: String, label: String) -> some View {
+        VStack(spacing: 4) {
             Text(value)
-                .font(.system(size: 28, weight: .black, design: .rounded))
-                .foregroundColor(.black)
-            
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
             Text(label)
-                .font(.displayBold(11))
-                .foregroundColor(.black)
-                .textCase(.uppercase)
+                .font(.caption2.weight(.medium))
+                .foregroundColor(.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(color)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.black, lineWidth: 3)
-        )
-        .shadow(color: .black, radius: 0, x: 3, y: 3)
     }
     
-    // MARK: - Recent Activity (placeholder จนกว่าจะมีตาราง activity)
-    private var recentActivity: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("RECENT ACTIVITY")
-                .font(.displayBold(14))
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-            
-            if recentActivities.isEmpty {
-                Text("No recent activity")
-                    .font(.bodyMedium(14))
-                    .foregroundColor(.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
-            } else {
-                VStack(spacing: 12) {
-                    ForEach(recentActivities, id: \.text) { item in
-                        activityRow(icon: item.icon, text: item.text, time: item.time, color: item.color)
-                    }
-                }
-            }
-        }
-    }
-    
-    /// ข้อมูล activity – ตอนนี้ว่าง, ต่อไปดึงจาก DB/API
-    private var recentActivities: [(icon: String, text: String, time: String, color: Color)] {
-        [] // TODO: fetch จากตาราง activity / events
-    }
-    
-    private func activityRow(icon: String, text: String, time: String, color: Color) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(color)
-                .frame(width: 40, height: 40)
-                .background(color.opacity(0.2))
-                .cornerRadius(10)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.black, lineWidth: 2)
-                )
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(text)
-                    .font(.bodyMedium(14))
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                
-                Text(time)
-                    .font(.mono(12))
-                    .foregroundColor(.textSecondary)
-            }
-            
-            Spacer()
-        }
-        .padding(12)
-        .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-        )
-    }
-    
-    // MARK: - Settings Button
-    private var settingsButton: some View {
+    private var settingsRow: some View {
         Button(action: {}) {
             HStack {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 20, weight: .bold))
-                
-                Text("SETTINGS")
-                    .font(.displayBold(16))
-                
+                Image(systemName: "gearshape")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.textSecondary)
+                Text("Settings")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(colorScheme == .dark ? .white : .black)
                 Spacer()
-                
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.textSecondary)
             }
-            .foregroundColor(.black)
-            .padding(20)
-            .background(Color.white)
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.black, lineWidth: 3)
-            )
-            .shadow(color: .black, radius: 0, x: 4, y: 4)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 4)
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

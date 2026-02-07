@@ -61,11 +61,11 @@ struct WelcomeView: View {
                         }
                     }) {
                         Image(systemName: "arrow.left")
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(width: 44, height: 44)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(Circle())
+                            .background(.ultraThinMaterial, in: Circle())
+                            .overlay(Circle().strokeBorder(.white.opacity(0.2), lineWidth: 1))
                     }
                 } else {
                     HStack(spacing: 8) {
@@ -122,43 +122,37 @@ struct WelcomeView: View {
                 )
                 .padding(.top, 20)
             
-            // Central Card
             ZStack {
-                // Glow
                 Circle()
-                    .fill(Color.neoCyan.opacity(0.2))
-                    .frame(width: 250, height: 250)
-                    .blur(radius: 40)
+                    .fill(Color.neoCyan.opacity(0.15))
+                    .frame(width: 220, height: 220)
+                    .blur(radius: 30)
                 
-                RoundedRectangle(cornerRadius: 32)
-                    .fill(Color.backgroundDark)
-                    .frame(width: 240, height: 240)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 32)
-                            .stroke(Color.white, lineWidth: 2)
-                    )
-                    .rotationEffect(.degrees(-5))
+                RoundedRectangle(cornerRadius: 28)
+                    .frame(width: 220, height: 220)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 28))
+                    .overlay(RoundedRectangle(cornerRadius: 28).strokeBorder(.white.opacity(0.3), lineWidth: 1))
+                    .rotationEffect(.degrees(-4))
                 
                 Image(systemName: "brain.head.profile")
-                    .font(.system(size: 100))
+                    .font(.system(size: 80))
                     .foregroundColor(.neoCyan)
                 
-                // Floating icons
                 Image(systemName: "bolt.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(.black)
-                    .frame(width: 48, height: 48)
-                    .background(Color.primaryYellow)
-                    .clipShape(Circle())
-                    .offset(x: 110, y: -110)
-                
-                Image(systemName: "sparkles")
                     .font(.system(size: 20))
                     .foregroundColor(.black)
                     .frame(width: 44, height: 44)
-                    .background(Color.white)
-                    .clipShape(Circle())
-                    .offset(x: -110, y: 100)
+                    .background(.thinMaterial, in: Circle())
+                    .overlay(Circle().strokeBorder(.white.opacity(0.3), lineWidth: 1))
+                    .offset(x: 100, y: -100)
+                
+                Image(systemName: "sparkles")
+                    .font(.system(size: 18))
+                    .foregroundStyle(.white)
+                    .frame(width: 40, height: 40)
+                    .background(.thinMaterial, in: Circle())
+                    .overlay(Circle().strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                    .offset(x: -100, y: 90)
             }
             .padding(.vertical, 40)
             
@@ -186,48 +180,48 @@ struct WelcomeView: View {
                 .italic()
                 .padding(.top, 20)
             
-            // Stacked Cards
             ZStack {
-                NeubrutalistCard(backgroundColor: .neoLime) {
+                GlassCard(cornerRadius: 16) {
                     HStack {
                         Image(systemName: "figure.yoga")
                         Text("Yoga")
                     }
-                    .font(.displayBold(18))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
                 }
                 .frame(width: 200)
                 .offset(x: 20, y: 60)
                 
-                NeubrutalistCard(backgroundColor: .neoMagenta) {
+                GlassCard(cornerRadius: 16) {
                     HStack {
                         Image(systemName: "terminal")
                         Text("Review PRs")
                     }
-                    .font(.displayBold(18))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
                 }
                 .frame(width: 220)
                 .offset(x: -20, y: 0)
                 
-                NeubrutalistCard(backgroundColor: .neoCyan) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "pencil.and.outline")
-                            Text("Design System")
-                        }
-                        .font(.displayBold(20))
+                GlassCard(cornerRadius: 16) {
+                    HStack {
+                        Image(systemName: "pencil.and.outline")
+                        Text("Design System")
                     }
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
                 }
                 .frame(width: 240)
                 .offset(x: 10, y: -60)
                 .overlay(
                     Image(systemName: "gearshape.fill")
-                        .font(.system(size: 40))
+                        .font(.system(size: 28))
                         .foregroundColor(.white)
-                        .padding(10)
-                        .background(Color.neoCyan)
-                        .cornerRadius(12)
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white, lineWidth: 2))
-                        .offset(x: 100, y: -100)
+                        .frame(width: 48, height: 48)
+                        .background(Color.neoCyan.opacity(0.9))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(.white.opacity(0.3), lineWidth: 1))
+                        .offset(x: 90, y: -90)
                 )
             }
             .padding(.vertical, 60)
@@ -310,9 +304,7 @@ struct WelcomeView: View {
                 .frame(height: 80)
             }
             .padding(24)
-            .background(Color.white)
-            .cornerRadius(32)
-            .overlay(RoundedRectangle(cornerRadius: 32).stroke(Color.black, lineWidth: 3))
+            .glassBackground(cornerRadius: 24)
             .padding(.horizontal, 32)
             
             VStack(spacing: 16) {
@@ -338,15 +330,27 @@ struct WelcomeView: View {
                 OnboardingPageIndicator(currentStep: currentStep)
             }
             
-            NeubrutalistButton.primary(
-                title: currentStep == .recaps ? "GET STARTED" : (currentStep == .welcome ? "NEXT STEP" : "NEXT"),
-                icon: currentStep == .recaps ? "arrow.right" : nil
-            ) {
+            Button(action: {
                 if let next = OnboardingStep(rawValue: currentStep.rawValue + 1) {
                     currentStep = next
                 } else {
                     showLogin = true
                 }
+            }) {
+                HStack(spacing: 8) {
+                    Text(currentStep == .recaps ? "Get started" : (currentStep == .welcome ? "Next step" : "Next"))
+                        .font(.system(size: 16, weight: .semibold))
+                    if currentStep == .recaps {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(Color.neoCyan)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(.white.opacity(0.3), lineWidth: 1))
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 20)

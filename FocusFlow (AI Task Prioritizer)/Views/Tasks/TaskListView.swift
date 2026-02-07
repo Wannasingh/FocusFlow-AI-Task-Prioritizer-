@@ -10,8 +10,9 @@ import SwiftUI
 struct TaskListView: View {
     @State private var selectedFilter: TaskFilter = .all
     @State private var showAddTask = false
+    @State private var searchText: String = ""
     @Environment(\.colorScheme) var colorScheme
-    
+
     // Mock tasks
     @State private var tasks: [TaskItem] = [
         TaskItem(title: "Draft Q3 Report", category: Models.TaskCategory.work, time: "Today, 10:00 AM", priority: "High Priority", color: .neoCyan),
@@ -21,245 +22,183 @@ struct TaskListView: View {
     ]
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            header
-            
-            // Filters
-            filterSection
-            
-            // Task List
-            ScrollView {
-                VStack(spacing: 20) {
-                    ForEach(tasks) { task in
-                        taskRow(task)
+        ZStack {
+            (colorScheme == .dark ? Color.backgroundDarkDeep : Color.backgroundLight)
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                header
+                searchBar
+                filterSection
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(Array(tasks.enumerated()), id: \.element.id) { index, task in
+                            taskRow(task)
+                            if index < tasks.count - 1 {
+                                Divider()
+                                    .background(Color.primary.opacity(0.1))
+                                    .padding(.leading, 56)
+                            }
+                        }
+                        Spacer(minLength: 100)
                     }
-                    
-                    Spacer(minLength: 100)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .glassBackground(cornerRadius: 24)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 12)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
             }
-            .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.backgroundLight)
         }
-        .overlay(alignment: .bottomTrailing) {
-            fab
-        }
-        .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.backgroundLight)
-        .sheet(isPresented: $showAddTask) {
-            AddTaskView()
-        }
+        .overlay(alignment: .bottomTrailing) { fab }
+        .sheet(isPresented: $showAddTask) { AddTaskView() }
     }
     
-    // MARK: - Header
+    // MARK: - Header (Material only, minimal)
     private var header: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                // Logo
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white)
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(.primary)
                     .frame(width: 40, height: 40)
-                    .overlay(
-                        Image(systemName: "bolt.fill")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.black)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.black, lineWidth: 2)
-                    )
-                    .shadow(color: .black, radius: 0, x: 2, y: 2)
-                
-                Text("FOCUSFLOW")
-                    .font(.system(size: 24, weight: .black, design: .rounded))
-                    .foregroundColor(colorScheme == .dark ? .white : .black)
-                
+                    .glassBar(cornerRadius: 10)
+
+                Text("FocusFlow")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+
                 Spacer()
-                
-                // Notifications
+
                 Button(action: {}) {
                     ZStack(alignment: .topTrailing) {
                         Image(systemName: "bell.fill")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(colorScheme == .dark ? .white : .black)
-                            .frame(width: 48, height: 48)
-                            .background(Color.white)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                            .shadow(color: .black, radius: 0, x: 2, y: 2)
-                        
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .frame(width: 44, height: 44)
+                            .glassBar(cornerRadius: 12)
                         Circle()
-                            .fill(Color.primaryGreen)
-                            .frame(width: 12, height: 12)
-                            .overlay(Circle().stroke(Color.black, lineWidth: 1))
-                            .offset(x: -4, y: 4)
+                            .fill(Color.red.opacity(0.8))
+                            .frame(width: 8, height: 8)
+                            .offset(x: -2, y: 2)
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
             }
-            
-            // Title
-            Text("MY TASKS")
-                .font(.system(size: 42, weight: .bold, design: .rounded))
-                .foregroundColor(colorScheme == .dark ? .white : .black)
-                .tracking(-1)
-            
-            Rectangle()
-                .fill(Color.primaryGreen)
-                .frame(width: 96, height: 8)
-                .overlay(
-                    Rectangle()
-                        .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-                )
+
+            Text("My Tasks")
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
+        .glassBackground(cornerRadius: 20)
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+    }
+
+    // MARK: - Search Bar (ultraThinMaterial)
+    private var searchBar: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(.secondary)
+            TextField("Search tasks...", text: $searchText)
+                .font(.system(size: 16))
+                .foregroundStyle(.primary)
         }
         .padding(.horizontal, 16)
-        .padding(.top, 16)
-        .padding(.bottom, 8)
-        .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.backgroundLight)
+        .frame(height: 48)
+        .glassBar(cornerRadius: 14)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
     }
-    
-    // MARK: - Filter Section
+
+    // MARK: - Filter (Material only, ไม่ใส่สี)
     private var filterSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 ForEach(TaskFilter.allCases, id: \.self) { filter in
                     filterChip(filter)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 16)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
         }
-        .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.backgroundLight)
+        .padding(.top, 4)
     }
-    
+
     private func filterChip(_ filter: TaskFilter) -> some View {
         Button(action: { selectedFilter = filter }) {
-            HStack(spacing: 6) {
-                Text(filter.rawValue.uppercased())
-                    .font(.displayBold(12))
-                    .foregroundColor(.black)
-                
-                if let icon = filter.icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.black)
-                }
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .background(selectedFilter == filter ? Color.primaryGreen : Color.white)
-            .cornerRadius(20)
-            .overlay(
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.black, lineWidth: 2)
-            )
-            .shadow(color: .black, radius: 0, x: 2, y: 2)
+            Text(filter.rawValue)
+                .font(.system(size: 13, weight: selectedFilter == filter ? .semibold : .medium))
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(selectedFilter == filter ? .thinMaterial : .ultraThinMaterial)
+                )
+                .overlay(Capsule().strokeBorder(Color.primary.opacity(selectedFilter == filter ? 0.12 : 0.06), lineWidth: 1))
         }
+        .buttonStyle(PlainButtonStyle())
     }
-    
-    // MARK: - Task Row
+
+    // MARK: - Task Row (Material, minimal)
     private func taskRow(_ task: TaskItem) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Checkbox
+        HStack(alignment: .center, spacing: 14) {
             Button(action: {}) {
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.white)
+                Circle()
+                    .strokeBorder(Color.primary.opacity(0.3), lineWidth: 2)
                     .frame(width: 24, height: 24)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.black, lineWidth: 2)
-                    )
+                    .background(Circle().fill(.ultraThinMaterial))
             }
-            .padding(.top, 4)
-            
-            // Content
-            VStack(alignment: .leading, spacing: 8) {
+            .buttonStyle(PlainButtonStyle())
+
+            VStack(alignment: .leading, spacing: 4) {
                 Text(task.title)
-                    .font(.system(size: 20, weight: .bold, design: .rounded))
-                    .foregroundColor(.black)
-                
-                HStack(spacing: 6) {
+                    .font(.system(size: 17, weight: .semibold, design: .rounded))
+                    .foregroundStyle(.primary)
+                HStack(spacing: 4) {
                     Image(systemName: "clock")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                     Text(task.time)
-                        .font(.bodyMedium(14))
+                        .font(.caption)
                 }
-                .foregroundColor(.black.opacity(0.8))
+                .foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
-            // More button
+
+            if task.isAIPrioritized {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
             Button(action: {}) {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.black)
-                    .rotationEffect(.degrees(90))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.secondary)
                     .frame(width: 32, height: 32)
             }
+            .buttonStyle(PlainButtonStyle())
         }
-        .padding(16)
-        .background(task.color)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black, lineWidth: 3)
-        )
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
-        .overlay(alignment: .topLeading) {
-            Text(task.priority)
-                .font(.displayBold(10))
-                .foregroundColor(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.black)
-                .cornerRadius(4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                )
-                .offset(x: 16, y: -8)
-        }
-        .overlay(alignment: .bottomTrailing) {
-            if task.isAIPrioritized {
-                HStack(spacing: 4) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 12, weight: .bold))
-                    Text("AI PRIORITIZED")
-                        .font(.displayBold(8))
-                }
-                .foregroundColor(.black)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.white.opacity(0.3))
-                .cornerRadius(4)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.black.opacity(0.1), lineWidth: 1)
-                )
-                .offset(x: -16, y: -16)
-            }
-        }
+        .padding(.vertical, 14)
     }
-    
-    // MARK: - FAB
+
+    // MARK: - FAB (Material, ไม่ใส่พื้นสี)
     private var fab: some View {
         Button(action: { showAddTask = true }) {
             Image(systemName: "plus")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundColor(.black)
-                .frame(width: 64, height: 64)
-                .background(Color.primaryGreen)
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.black, lineWidth: 4)
-                    )
-                .shadow(color: .black, radius: 0, x: 4, y: 4)
+                .font(.system(size: 24, weight: .semibold))
+                .foregroundStyle(.primary)
+                .frame(width: 56, height: 56)
+                .background(.thinMaterial, in: Circle())
+                .overlay(Circle().strokeBorder(Color.primary.opacity(0.1), lineWidth: 1))
         }
-        .padding(.trailing, 16)
+        .buttonStyle(PlainButtonStyle())
+        .padding(.trailing, 20)
         .padding(.bottom, 96)
     }
 }
@@ -294,3 +233,4 @@ struct TaskItem: Identifiable {
 #Preview {
     TaskListView()
 }
+

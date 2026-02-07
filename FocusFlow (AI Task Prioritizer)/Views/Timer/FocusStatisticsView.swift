@@ -16,6 +16,7 @@ struct FocusStatisticsView: View {
             VStack(spacing: 24) {
                 // Header
                 header
+                    .glassBackground(cornerRadius: 20)
                 
                 // Period Selector
                 periodSelector
@@ -33,7 +34,9 @@ struct FocusStatisticsView: View {
             }
             .padding(.horizontal, 24)
         }
-        .background(colorScheme == .dark ? Color.backgroundDarkAlt : Color.backgroundLight)
+        .background(
+            LinearGradient(colors: [Color.black.opacity(0.92), Color.indigo.opacity(0.6), Color.purple.opacity(0.5)], startPoint: .topLeading, endPoint: .bottomTrailing)
+        )
     }
     
     // MARK: - Header
@@ -57,22 +60,30 @@ struct FocusStatisticsView: View {
     
     // MARK: - Period Selector
     private var periodSelector: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             ForEach(StatsPeriod.allCases, id: \.self) { period in
                 Button(action: { selectedPeriod = period }) {
-                    Text(period.rawValue)
-                        .font(.displayBold(12))
-                        .foregroundColor(.black)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(selectedPeriod == period ? Color.primaryBlue : Color.white)
-                        .cornerRadius(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.black, lineWidth: 2)
-                        )
-                        .shadow(color: .black, radius: 0, x: selectedPeriod == period ? 0 : 2, y: selectedPeriod == period ? 0 : 2)
+                    if selectedPeriod == period {
+                        Text(period.rawValue)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10).fill(Color.neoCyan)
+                            )
+                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                    } else {
+                        Text(period.rawValue)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(colorScheme == .dark ? .white : .black)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+                            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(.white.opacity(0.25), lineWidth: 1))
+                    }
                 }
+                .buttonStyle(PlainButtonStyle())
             }
         }
     }
@@ -88,25 +99,17 @@ struct FocusStatisticsView: View {
     private func statCard(title: String, value: String, color: Color) -> some View {
         VStack(spacing: 8) {
             Text(title)
-                .font(.displayBold(12))
-                .foregroundColor(.black)
-                .textCase(.uppercase)
-            
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.secondary)
             Text(value)
-                .font(.system(size: 32, weight: .black, design: .rounded))
-                .foregroundColor(.black)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundColor(colorScheme == .dark ? .white : .black)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(color)
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.black, lineWidth: 3)
-        )
-        .shadow(color: .black, radius: 0, x: 4, y: 4)
+        .glassBackground(cornerRadius: 16)
     }
-    
+
     // MARK: - Chart Section
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -116,34 +119,23 @@ struct FocusStatisticsView: View {
             
             // Simple bar chart placeholder
             HStack(alignment: .bottom, spacing: 8) {
-                ForEach(0..<7) { index in
+                ForEach(0..<7, id: \.self) { index in
                     VStack(spacing: 4) {
-                        Rectangle()
-                            .fill(Color.primaryBlue)
-                            .frame(width: 32, height: CGFloat.random(in: 40...120))
-                            .overlay(
-                                Rectangle()
-                                    .stroke(Color.black, lineWidth: 2)
-                            )
-                        
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.neoCyan.opacity(0.9))
+                            .frame(width: 28, height: CGFloat([60, 80, 45, 100, 70, 90, 55][index]))
                         Text(["M", "T", "W", "T", "F", "S", "S"][index])
-                            .font(.displayBold(10))
-                            .foregroundColor(.textSecondary)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
             .frame(maxWidth: .infinity)
             .padding(20)
-            .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.white)
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 3)
-            )
-            .shadow(color: colorScheme == .dark ? .white : .black, radius: 0, x: 4, y: 4)
+            .glassBackground(cornerRadius: 16)
         }
     }
-    
+
     // MARK: - Session Breakdown
     private var sessionBreakdown: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -163,26 +155,17 @@ struct FocusStatisticsView: View {
         HStack {
             Circle()
                 .fill(color)
-                .frame(width: 12, height: 12)
-                .overlay(Circle().stroke(Color.black, lineWidth: 2))
-            
+                .frame(width: 10, height: 10)
             Text(type)
                 .font(.bodyMedium(16))
                 .foregroundColor(colorScheme == .dark ? .white : .black)
-            
             Spacer()
-            
             Text("\(count)")
-                .font(.displayBold(16))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(colorScheme == .dark ? .white : .black)
         }
-        .padding(16)
-        .background(colorScheme == .dark ? Color.backgroundDarkDeep : Color.white)
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(colorScheme == .dark ? Color.white : Color.black, lineWidth: 2)
-        )
+        .padding(14)
+        .glassSubtle(cornerRadius: 12)
     }
 }
 
